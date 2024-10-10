@@ -1,6 +1,10 @@
-# DSPRO1: Bird Detection using Sounds
+# ChirpTrack - Acoustic tracking of bird species through their unique vocal patterns
 
-Members:
+The goal is to build a multi-class classification model that takes a short audio file as input and outputs the predicted bird species. The project will also include the development of a simple web-based interface where users can upload an audio file, and the model will return the classification result.
+
+In the future this project could be extended to a real-time acoustic monitoring system to detect the presence of species. By using machine learning, the system will automatically classify bird sounds in recordings obtained from remote microphones in habitats such as forests in order to track biodiversity and species health.
+
+## Team members
 - David Hodel (<david.hodel@stud.hslu.ch>)
 - Maiko Trede (<maiko.trede@stud.hslu.ch>)
 - Nevin Helfenstein (<nevin.helfenstein@stud.hslu.ch>)
