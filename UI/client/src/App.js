@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import './App.css';
-import logo from './img/logo_dark.png'; // Import the logo
+import logo from './img/logo_dark.png';
+import AnalysePage from './AnalysePage';
 
-// Import bird images statically
 import sparrow from './img/sparrow.jpg';
 import robin from './img/robin.jpg';
 import bluetit from './img/bluetit.jpg';
@@ -14,7 +14,6 @@ import magpie from './img/magpie.jpg';
 import starling from './img/starling.jpg';
 import finch from './img/finch.jpg';
 
-// Sample bird data with static image imports and additional descriptions
 const birds = [
   {
     name: 'Common Sparrow',
@@ -214,12 +213,8 @@ function App() {
             </div>
           </section>
         )}
-
         {activePage === 'analyse' && (
-          <div>
-            <h1>Analyse Page</h1>
-            <p>Analyse bird sounds here.</p>
-          </div>
+          <AnalysePage />
         )}
       </main>
     </div>
