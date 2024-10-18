@@ -3,7 +3,6 @@
   text-align: center;
 }
 
-/* src/App.css */
 .App-header {
   display: flex;
   justify-content: space-between;
@@ -82,56 +81,78 @@ main {
 }
 
 /* Bird slider styling */
+.slider-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 30px;
+}
+
 .bird-slider {
   display: flex;
-  overflow-x: scroll;
-  gap: 20px;
-  padding: 20px 0;
+  justify-content: space-around;
+  width: 80%;
+  gap: 20px; /* Add spacing between the cards */
 }
 
 .bird-card {
   position: relative;
   cursor: pointer;
-  width: 150px;
-  text-align: center;
+  width: 300px; /* Make the cards more square by setting equal width and height */
+  height: 300px;
+  perspective: 1000px;
+  margin: 0 10px; /* Add margin between cards */
 }
 
 .bird-card img {
   width: 100%;
+  height: 100%;
+  object-fit: cover;
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-.bird-name {
-  margin-top: 8px;
-  font-size: 16px;
-  color: #2c3e50;
-  font-weight: bold;
-}
-
-/* Overlay for bird description */
-.overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.6);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 100;
-}
-
-.overlay-content {
-  background-color: white;
-  padding: 20px;
+.bird-card .card-front, .bird-card .card-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  transition: transform 0.6s;
   border-radius: 8px;
-  max-width: 400px;
-  text-align: center;
 }
 
-.overlay-content p {
-  font-size: 18px;
-  color: #34495e;
+.bird-card .card-front {
+  transform: rotateY(0deg);
+}
+
+.bird-card .card-back {
+  transform: rotateY(180deg);
+  background-color: #fff;
+  color: #2c3e50;
+  padding: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  overflow-y: auto;
+  max-height: 100%;
+}
+
+.bird-card.flipped .card-front {
+  transform: rotateY(180deg);
+}
+
+.bird-card.flipped .card-back {
+  transform: rotateY(360deg);
+}
+
+/* Arrow buttons */
+.slider-arrow {
+  background: none;
+  border: none;
+  font-size: 36px;
+  cursor: pointer;
+  color: #1B2A35;
+}
+
+.slider-arrow:disabled {
+  color: lightgray;
+  cursor: not-allowed;
 }

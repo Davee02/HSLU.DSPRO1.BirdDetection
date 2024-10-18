@@ -14,34 +14,107 @@ import magpie from './img/magpie.jpg';
 import starling from './img/starling.jpg';
 import finch from './img/finch.jpg';
 
-// Sample bird data with static image imports
+// Sample bird data with static image imports and additional descriptions
 const birds = [
-  { name: 'Common Sparrow', img: sparrow, description: 'A small, plump, brown-grey bird common in urban areas.' },
-  { name: 'European Robin', img: robin, description: 'Known for its bright red breast, often seen in gardens.' },
-  { name: 'Eurasian Blue Tit', img: bluetit, description: 'A small bird with blue and yellow feathers, common in woodlands.' },
-  { name: 'Common Blackbird', img: blackbird, description: 'A medium-sized bird with a black body and orange beak.' },
-  { name: 'Barn Swallow', img: swallow, description: 'A migratory bird with long tail feathers, often seen swooping over fields.' },
-  { name: 'Great Tit', img: greattit, description: 'A robust bird with a striking black head and white cheeks.' },
-  { name: 'Wood Pigeon', img: pigeon, description: 'A large, grey bird with white neck patches, common in urban and rural areas.' },
-  { name: 'Magpie', img: magpie, description: 'A large bird with distinctive black and white plumage and long tail.' },
-  { name: 'Common Starling', img: starling, description: 'A medium-sized bird with glossy, speckled feathers and a sharp beak.' },
-  { name: 'House Finch', img: finch, description: 'A small bird with a red-orange head and chest, commonly found in gardens.' }
+  {
+    name: 'Common Sparrow',
+    img: sparrow,
+    description: 'A small, plump, brown-grey bird common in urban areas.',
+    info: 'Sparrows are incredibly adaptive and can live in a variety of environments, from urban areas to the countryside.',
+    funFact: 'Sparrows are social birds that often live in colonies, and they take dust baths instead of water baths!'
+  },
+  {
+    name: 'European Robin',
+    img: robin,
+    description: 'Known for its bright red breast, often seen in gardens.',
+    info: 'Robins are fiercely territorial birds and are known to defend their patch aggressively, even against much larger birds.',
+    funFact: 'In the UK, the Robin is often associated with Christmas and appears on many holiday cards!'
+  },
+  {
+    name: 'Eurasian Blue Tit',
+    img: bluetit,
+    description: 'A small bird with blue and yellow feathers, common in woodlands.',
+    info: 'Blue Tits are intelligent birds known for their acrobatic skills, often seen hanging upside down to feed on insects.',
+    funFact: 'Blue Tits were once famous for learning to peck through milk bottle tops to steal cream!'
+  },
+  {
+    name: 'Common Blackbird',
+    img: blackbird,
+    description: 'A medium-sized bird with a black body and orange beak.',
+    info: 'Male blackbirds are entirely black, while females are brown and streaked. They are excellent singers, with melodious songs.',
+    funFact: 'The song of the male Blackbird is so popular that it is often heard in television programs and films.'
+  },
+  {
+    name: 'Barn Swallow',
+    img: swallow,
+    description: 'A migratory bird with long tail feathers, often seen swooping over fields.',
+    info: 'Swallows are fast and agile fliers, often seen darting through the air as they catch insects.',
+    funFact: 'Swallows are famous for their long migrations and can fly up to 200 miles a day during their travels!'
+  },
+  {
+    name: 'Great Tit',
+    img: greattit,
+    description: 'A robust bird with a striking black head and white cheeks.',
+    info: 'Great Tits are the largest of the UK tit species, known for their bold behavior and strong voice.',
+    funFact: 'Great Tits are known for their ability to adapt their songs in noisy urban environments!'
+  },
+  {
+    name: 'Wood Pigeon',
+    img: pigeon,
+    description: 'A large, grey bird with white neck patches, common in urban and rural areas.',
+    info: 'Wood Pigeons are the largest and most widespread pigeon species in Europe, often found in parks and gardens.',
+    funFact: 'Wood Pigeons can hold more water in their throats than most birds, allowing them to drink without raising their heads.'
+  },
+  {
+    name: 'Magpie',
+    img: magpie,
+    description: 'A large bird with distinctive black and white plumage and long tail.',
+    info: 'Magpies are known for their intelligence and curiosity, often collecting shiny objects.',
+    funFact: 'Magpies are one of the few animal species that can recognize themselves in a mirror!'
+  },
+  {
+    name: 'Common Starling',
+    img: starling,
+    description: 'A medium-sized bird with glossy, speckled feathers and a sharp beak.',
+    info: 'Starlings are known for their ability to mimic sounds, including human speech and other birds.',
+    funFact: 'Starlings create stunning aerial displays called "murmurations," where thousands of birds fly in synchronized patterns.'
+  },
+  {
+    name: 'House Finch',
+    img: finch,
+    description: 'A small bird with a red-orange head and chest, commonly found in gardens.',
+    info: 'House Finches are social birds and are often seen feeding in flocks.',
+    funFact: 'The bright red color of the male House Finch comes from pigments in the food they eat!'
+  }
 ];
 
 function App() {
   const [activePage, setActivePage] = useState('home');
-  const [selectedBird, setSelectedBird] = useState(null); // To handle the bird description overlay
+  const [currentIndex, setCurrentIndex] = useState(0); // Slider index
+  const [flippedCards, setFlippedCards] = useState([]); // Track flipped cards
 
   const handlePageChange = (page) => {
     setActivePage(page);
   };
 
-  const handleBirdClick = (bird) => {
-    setSelectedBird(bird);
+  const handleNext = () => {
+    if (currentIndex < birds.length - 2) {
+      setCurrentIndex(currentIndex + 1);
+    }
   };
 
-  const handleOverlayClose = () => {
-    setSelectedBird(null); // Close the overlay when clicked
+  const handlePrevious = () => {
+    if (currentIndex > 0) {
+      setCurrentIndex(currentIndex - 1);
+    }
+  };
+
+  const handleFlip = (index) => {
+    if (flippedCards.includes(index)) {
+      setFlippedCards(flippedCards.filter((i) => i !== index));
+    } else {
+      setFlippedCards([...flippedCards, index]);
+    }
   };
 
   return (
@@ -100,25 +173,45 @@ function App() {
               Join us in exploring the world of bird sounds and making strides toward conserving the natural world.
             </p>
 
-            {/* Bird slider section */}
-            <div className="bird-slider">
-              {birds.map((bird, index) => (
-                <div key={index} className="bird-card" onClick={() => handleBirdClick(bird)}>
-                  <img src={bird.img} alt={bird.name} />
-                  <div className="bird-name">{bird.name}</div>
-                </div>
-              ))}
-            </div>
+            {/* Slider Title and Description */}
+            <h2>Most Common Birds that Could Live in Your Backyard</h2>
+            <p>These are some of the most common birds found in European backyards. Click on the cards to learn more about them!</p>
 
-            {/* Overlay for bird description */}
-            {selectedBird && (
-              <div className="overlay" onClick={handleOverlayClose}>
-                <div className="overlay-content">
-                  <h3>{selectedBird.name}</h3>
-                  <p>{selectedBird.description}</p>
-                </div>
+            {/* Bird slider section */}
+            <div className="slider-container">
+              <button className="slider-arrow left-arrow" onClick={handlePrevious} disabled={currentIndex === 0}>
+                &#9664;
+              </button>
+
+              <div className="bird-slider">
+                {birds.slice(currentIndex, currentIndex + 2).map((bird, index) => (
+                  <div
+                    key={index + currentIndex}
+                    className={`bird-card ${flippedCards.includes(index + currentIndex) ? 'flipped' : ''}`}
+                    onClick={() => handleFlip(index + currentIndex)}
+                  >
+                    <div className="card-front">
+                      <img src={bird.img} alt={bird.name} />
+                      <div className="bird-name">{bird.name}</div>
+                    </div>
+                    <div className="card-back">
+                      <h3>{bird.name}</h3>
+                      <p>{bird.description}</p>
+                      <p><strong>More info:</strong> {bird.info}</p>
+                      <p><strong>Fun fact:</strong> {bird.funFact}</p>
+                    </div>
+                  </div>
+                ))}
               </div>
-            )}
+
+              <button
+                className="slider-arrow right-arrow"
+                onClick={handleNext}
+                disabled={currentIndex >= birds.length - 2}
+              >
+                &#9654;
+              </button>
+            </div>
           </section>
         )}
 
