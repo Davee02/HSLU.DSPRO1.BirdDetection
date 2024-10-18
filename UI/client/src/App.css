@@ -9,27 +9,38 @@
   justify-content: space-between;
   align-items: center;
   background-color: #1B2A35;
-  padding: 10px 20px;
+  padding: 20px 40px;
   color: white;
 }
 
-
 .App-logo img {
-  height: 40px;
+  height: 50px;
+}
+
+.App-nav {
+  display: flex;
+  justify-content: flex-start;
+  margin-left: auto;
 }
 
 .App-nav ul {
   list-style-type: none;
   margin: 0;
-  padding: 0;
+  padding-right: 150px;
   display: flex;
-  gap: 15px;
+  gap: 50px;
 }
 
 .App-nav a {
   color: white;
   text-decoration: none;
-  font-size: 18px;
+  font-size: 20px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.App-nav a.active {
+  text-decoration: underline;
 }
 
 .App-nav a:hover {
@@ -39,3 +50,4 @@
 main {
   padding: 20px;
 }
+
