@@ -51,6 +51,7 @@ main {
   padding: 20px;
 }
 
+/* Styling for the home page content */
 .home-content {
   text-align: left;
   max-width: 800px;
@@ -80,4 +81,57 @@ main {
   margin-bottom: 20px;
 }
 
+/* Bird slider styling */
+.bird-slider {
+  display: flex;
+  overflow-x: scroll;
+  gap: 20px;
+  padding: 20px 0;
+}
 
+.bird-card {
+  position: relative;
+  cursor: pointer;
+  width: 150px;
+  text-align: center;
+}
+
+.bird-card img {
+  width: 100%;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.bird-name {
+  margin-top: 8px;
+  font-size: 16px;
+  color: #2c3e50;
+  font-weight: bold;
+}
+
+/* Overlay for bird description */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+}
+
+.overlay-content {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  max-width: 400px;
+  text-align: center;
+}
+
+.overlay-content p {
+  font-size: 18px;
+  color: #34495e;
+}
