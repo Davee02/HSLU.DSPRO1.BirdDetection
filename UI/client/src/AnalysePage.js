@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import './AnalysePage.css';
 
-// Custom component to update map's center based on user's location
 const SetUserLocation = ({ setPosition }) => {
   const map = useMap();
 
@@ -12,8 +11,8 @@ const SetUserLocation = ({ setPosition }) => {
         (position) => {
           const { latitude, longitude } = position.coords;
           const userLocation = [latitude, longitude];
-          setPosition(userLocation); // Update the parent component's state
-          map.setView(userLocation, 13); // Set the map's view to the user's location
+          setPosition(userLocation);
+          map.setView(userLocation, 13);
         },
         () => {
           alert('Unable to retrieve your location');
@@ -24,15 +23,15 @@ const SetUserLocation = ({ setPosition }) => {
     }
   }, [map, setPosition]);
 
-  return null; // This component does not render anything itself
+  return null;
 };
 
 const AnalysePage = () => {
-  const [file, setFile] = useState(null); // File state
+  const [file, setFile] = useState(null);
   const [description, setDescription] = useState(
     'Reminder: Make sure your recording is between 2 and 15 seconds, has good sound quality, and is from the European region.'
   );
-  const [position, setPosition] = useState([51.505, -0.09]); // Default to London's coordinates
+  const [position, setPosition] = useState([51.505, -0.09]);
 
   const handleFileUpload = (e) => {
     const uploadedFile = e.target.files[0];
@@ -87,14 +86,17 @@ const AnalysePage = () => {
 
       <div className="map-box">
         <MapContainer
-          center={position} // Set the map center to the user's position
+          center={position}
           zoom={13}
+          minZoom={5}
+          maxZoom={16}
           scrollWheelZoom={true}
-          style={{ height: '100%', width: '100%' }} // Ensure the map fills its container
+          preferCanvas={true}
+          style={{ height: '100%', width: '100%' }}
         >
           <TileLayer
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            attribution="&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
+            url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png" /* Faster, more performant tiles */
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
           />
           <SetUserLocation setPosition={setPosition} />
         </MapContainer>
