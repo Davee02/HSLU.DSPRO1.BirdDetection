@@ -1,68 +1,67 @@
 /* AnalysePage.css */
 .analyse-page {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: 2.2fr 0.5fr; /* Give more space to the top, less to the bottom */
-    gap: 10px;
-    height: calc(100vh - 60px); /* Subtract the height of the navbar from total height */
-    padding: 0;
-    margin: 0;
-    box-sizing: border-box;
-    overflow: hidden; /* Ensure no overflow from the grid */
-  }
-  
-  .analyse-box, .file-upload-box, .file-display-box, .map-box {
-    background-color: #f7f7f7;
-    border: 1px solid #ccc;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 10px;
-    box-sizing: border-box;
-    overflow: hidden; /* Prevent overflow inside these boxes */
-  }
-  
-  .analyse-box {
-    grid-column: 1 / 2;
-    grid-row: 1 / 2;
-    text-align: center;
-  }
-  
-  .file-upload-box, .file-display-box {
-    height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  
-  .upload-button {
-    background-color: #1b2a35;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    cursor: pointer;
-    font-size: 16px;
-  }
-  
-  .file-display-box {
-    grid-column: 2 / 3;
-    grid-row: 2 / 3;
-    text-align: center;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  
-  .map-box {
-    grid-column: 2 / 3;
-    grid-row: 1 / 2;
-    height: 100%;
-    padding: 0;
-  }
-  
-  .leaflet-container {
-    width: 100%;
-    height: 100%; /* Ensure the map fills its container */
-  }
-  
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 60% 30%;
+  gap: 10px;
+  height: calc(100vh - 60px);
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.analyse-box, .file-upload-box, .file-display-box, .map-box {
+  background-color: #f7f7f7;
+  border: 1px solid #ccc;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 10px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.analyse-box {
+  grid-column: 1 / 2;
+  grid-row: 1 / 2;
+  text-align: center;
+}
+
+.file-upload-box, .file-display-box {
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.upload-button {
+  background-color: #1b2a35;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.file-display-box {
+  grid-column: 2 / 3;
+  grid-row: 2 / 3;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.map-box {
+  grid-column: 2 / 3;
+  grid-row: 1 / 2;
+  height: 100%;
+  display: grid; /* Use grid layout */
+  padding: 0;
+  margin: 0;
+}
+
+.leaflet-container {
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0;
+}
