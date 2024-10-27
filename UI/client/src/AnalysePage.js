@@ -1,37 +1,37 @@
 import React, { useState, useEffect } from 'react';
-import { MapContainer, TileLayer, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import './AnalysePage.css';
 
-const SetUserLocation = ({ setPosition }) => {
-  const map = useMap();
-
-  useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          const userLocation = [latitude, longitude];
-          setPosition(userLocation);
-          map.setView(userLocation, 13);
-        },
-        () => {
-          alert('Unable to retrieve your location');
-        }
-      );
-    } else {
-      alert('Geolocation is not supported by your browser');
-    }
-  }, [map, setPosition]);
-
-  return null;
-};
+// Fixes default icon issue in Leaflet
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: require('leaflet/dist/images/marker-icon-2x.png'),
+  iconUrl: require('leaflet/dist/images/marker-icon.png'),
+  shadowUrl: require('leaflet/dist/images/marker-shadow.png'),
+});
 
 const AnalysePage = () => {
   const [file, setFile] = useState(null);
   const [description, setDescription] = useState(
     'Reminder: Make sure your recording is between 2 and 15 seconds, has good sound quality, and is from the European region.'
   );
-  const [position, setPosition] = useState([51.505, -0.09]);
+  const [position, setPosition] = useState([51.505, -0.09]); // Default position in London
+
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const { latitude, longitude } = pos.coords;
+          setPosition([latitude, longitude]);
+        },
+        () => alert('Unable to retrieve your location')
+      );
+    } else {
+      alert('Geolocation is not supported by your browser');
+    }
+  }, []);
 
   const handleFileUpload = (e) => {
     const uploadedFile = e.target.files[0];
@@ -88,17 +88,13 @@ const AnalysePage = () => {
         <MapContainer
           center={position}
           zoom={13}
-          minZoom={5}
-          maxZoom={16}
-          scrollWheelZoom={true}
-          preferCanvas={true}
           style={{ height: '100%', width: '100%' }}
         >
           <TileLayer
-            url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png" /* Faster, more performant tiles */
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           />
-          <SetUserLocation setPosition={setPosition} />
+          <Marker position={position}></Marker>
         </MapContainer>
       </div>
     </div>
