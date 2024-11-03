@@ -12,6 +12,7 @@ const SearchBird = () => {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const [selectedBird, setSelectedBird] = useState(null);
+  const [gbifId, setGbifId] = useState(null);
 
   useEffect(() => {
     const fetchBirds = async () => {
@@ -62,8 +63,7 @@ const SearchBird = () => {
               name: bird.comName,
               sciName: bird.sciName,
               description: wikiResponse.data.extract,
-              imageUrl: wikiResponse.data.thumbnail?.source || FALLBACK_IMAGE,
-              habitat: wikiResponse.data.description || 'Habitat information not available'
+              imageUrl: wikiResponse.data.thumbnail?.source || FALLBACK_IMAGE
             });
 
             if (birdsWithWikiInfo.length >= 10) break;
@@ -80,8 +80,28 @@ const SearchBird = () => {
     fetchBirdsWithWikipediaInfo();
   }, [searchTerm, allBirds]);
 
+  const handleBirdClick = async (bird) => {
+    setSelectedBird(bird);
+
+    try {
+      const gbifResponse = await axios.get(
+        `https://api.gbif.org/v1/species?name=${encodeURIComponent(bird.sciName)}`
+      );
+      const gbifSpecies = gbifResponse.data.results[0];
+      if (gbifSpecies) {
+        setGbifId(gbifSpecies.key);
+      } else {
+        setGbifId(null);
+      }
+    } catch (error) {
+      console.error('Error fetching GBIF ID:', error);
+      setGbifId(null);
+    }
+  };
+
   const closePopup = () => {
     setSelectedBird(null);
+    setGbifId(null);
   };
 
   return (
@@ -103,7 +123,7 @@ const SearchBird = () => {
           <div
             key={bird.sciName}
             className="bird-result"
-            onClick={() => setSelectedBird(bird)}
+            onClick={() => handleBirdClick(bird)}
           >
             <h4>{bird.name}</h4>
             <p><strong>Scientific Name:</strong> {bird.sciName}</p>
@@ -111,7 +131,6 @@ const SearchBird = () => {
         ))}
       </div>
 
-      {/* Modal Popup for Selected Bird */}
       {selectedBird && (
         <div className="modal-overlay" onClick={closePopup}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
@@ -122,7 +141,20 @@ const SearchBird = () => {
               <img src={selectedBird.imageUrl} alt={selectedBird.name} className="bird-image" />
             )}
             <p>{selectedBird.description}</p>
-            <p><strong>Habitat:</strong> {selectedBird.habitat}</p>
+
+            <h4>Distribution Map:</h4>
+            {gbifId ? (
+              <a
+                href={`https://www.gbif.org/species/${gbifId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="distribution-link"
+              >
+                View Distribution Map on GBIF
+              </a>
+            ) : (
+              <p>Distribution map not available.</p>
+            )}
           </div>
         </div>
       )}
