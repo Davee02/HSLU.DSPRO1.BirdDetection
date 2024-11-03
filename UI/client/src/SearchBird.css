@@ -1,0 +1,89 @@
+/* SearchBird.css */
+
+.search-bird {
+    margin: 20px auto;
+    text-align: center;
+    width: 80%;
+    max-width: 600px;
+  }
+  
+  .search-bird h3 {
+    font-size: 1.5em;
+    margin-bottom: 10px;
+  }
+  
+  .search-input {
+    padding: 12px 20px;
+    width: 100%;
+    max-width: 500px;
+    border: 1px solid #ccc;
+    border-radius: 25px;
+    font-size: 1em;
+    outline: none;
+    transition: box-shadow 0.3s;
+  }
+  
+  .search-input:focus {
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+    border-color: #007bff;
+  }
+  
+  .bird-results {
+    margin-top: 20px;
+    text-align: left;
+  }
+  
+  .bird-result {
+    background-color: #f9f9f9;
+    padding: 15px;
+    margin: 10px 0;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+  
+  .bird-result:hover {
+    transform: scale(1.03);
+  }
+  
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+  
+  .modal-content {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 500px;
+    position: relative;
+    text-align: center;
+  }
+  
+  .close-button {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 1.2em;
+    border: none;
+    background: none;
+    cursor: pointer;
+  }
+  
+  .bird-image {
+    width: 100%;
+    max-width: 200px;
+    margin: 15px 0;
+    border-radius: 10px;
+  }
+  

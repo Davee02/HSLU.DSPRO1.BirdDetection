@@ -13,6 +13,7 @@ import pigeon from './img/pigeon.jpg';
 import magpie from './img/magpie.jpg';
 import starling from './img/starling.jpg';
 import finch from './img/finch.jpg';
+import SearchBird from './SearchBird';
 
 const birds = [
   {
@@ -210,6 +211,11 @@ function App() {
               >
                 &#9654;
               </button>
+            </div>
+            <div>
+              <br></br>
+              <br></br>
+              <SearchBird />
             </div>
           </section>
         )}
