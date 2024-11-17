@@ -1,5 +1,6 @@
 # Custom exclusions
 data/
+data_test/
 download.zip
 
 # Byte-compiled / optimized / DLL files
