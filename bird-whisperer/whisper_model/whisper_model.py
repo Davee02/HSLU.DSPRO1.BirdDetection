@@ -31,7 +31,7 @@ class WhisperModel(torch.nn.Module):
         assert n_classes is not None, "'n_classes' cannot be None. Specify 'n_classes' present in the dataset."
         
         dirname = os.path.dirname(__file__)
-        model_path = os.path.join(dirname, "../../data/whisper_models/base")
+        model_path = os.path.join(dirname, "../../data/bird-whisperer/whisper_models")
 
         self.audio_encoder = whisper.load_model("tiny", download_root=model_path).encoder
         self.classifier = CNN(n_classes)
