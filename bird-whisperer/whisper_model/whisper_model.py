@@ -1,5 +1,5 @@
 import os
-from . import whisper
+import whisper
 
 import torch
 from torch import nn
@@ -26,14 +26,14 @@ class CNN(torch.nn.Module):
         return x
 
 class WhisperModel(torch.nn.Module):
-    def __init__(self, n_classes=264, pre_trained=True):
+    def __init__(self, n_classes):
         super(WhisperModel, self).__init__()
         assert n_classes is not None, "'n_classes' cannot be None. Specify 'n_classes' present in the dataset."
         
         dirname = os.path.dirname(__file__)
         model_path = os.path.join(dirname, "../../data/whisper_models/base")
 
-        self.audio_encoder = whisper.load_model("base", pre_trained=pre_trained, download_root=model_path).encoder
+        self.audio_encoder = whisper.load_model("tiny", download_root=model_path).encoder
         self.classifier = CNN(n_classes)
 
     def forward(self, x):
