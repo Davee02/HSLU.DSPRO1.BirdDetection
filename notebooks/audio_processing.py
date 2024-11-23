@@ -2,11 +2,11 @@ import numpy as np
 import librosa
 
 class AudioProcessor:
-    def __init__(self, sample_rate=22050, segment_duration=20, target_db_level=-20):
+    def __init__(self, sample_rate=22050, segment_duration=20, target_db_level=-20, seed=42):
         self.sample_rate = sample_rate
         self.segment_duration = segment_duration
         self.target_db_level = target_db_level
-        np.random.seed(42)
+        np.random.seed(seed)  # Make the seed a parameter
 
     def normalize_audio(self, y):
         rms = librosa.feature.rms(y=y)[0]
@@ -36,14 +36,16 @@ class AudioProcessor:
         segment_length = self.segment_duration * self.sample_rate
         return np.pad(y, (0, max(0, segment_length - len(y))))[:segment_length]
 
-    def create_log_mel_spectrogram(self, y):
-        mel_spec = librosa.feature.melspectrogram(y=y, sr=self.sample_rate, n_fft=2048, hop_length=512, n_mels=128)
+    def create_log_mel_spectrogram(self, y, n_fft=2048, hop_length=512, n_mels=128):
+        # Added parameters n_fft, hop_length, n_mels
+        mel_spec = librosa.feature.melspectrogram(y=y, sr=self.sample_rate, n_fft=n_fft, hop_length=hop_length, n_mels=n_mels)
         return librosa.power_to_db(mel_spec, ref=np.max)
 
-    def apply_spectrogram_augmentation(self, S_db):
-        time_mask = np.random.randint(50, 100)
+    def apply_spectrogram_augmentation(self, S_db, time_mask_lower=50, time_mask_upper=100, freq_mask_lower=1, freq_mask_upper=7):
+        # Made lower and upper bounds for time and frequency masks parameters
+        time_mask = np.random.randint(time_mask_lower, time_mask_upper)
         t0 = np.random.randint(0, max(S_db.shape[1] - time_mask, 1))
-        freq_mask = np.random.randint(1, 7)
+        freq_mask = np.random.randint(freq_mask_lower, freq_mask_upper)
         f0 = np.random.randint(0, max(S_db.shape[0] - freq_mask, 1))
         S_db[:, t0:t0 + time_mask] = 0
         S_db[f0:f0 + freq_mask, :] = 0
