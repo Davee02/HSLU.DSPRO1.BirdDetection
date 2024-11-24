@@ -1,3 +1,5 @@
+import os
+import torch
 from torch.utils.data import Dataset
 
 class XenoCantoDataset(Dataset):
@@ -11,3 +13,12 @@ class XenoCantoDataset(Dataset):
 
     def __len__(self):
         return len(self.audio_files_path)
+    
+    def __getitem__(self, index):
+        audio_path = self.audio_files_path[index]
+        audio_full_path = os.path.join(self.main_folder_path, audio_path)
+
+        mel = torch.load(audio_full_path)
+        label = torch.tensor(self.labels[index])
+
+        return mel, label, self.label2bird_dict[label.item()]
