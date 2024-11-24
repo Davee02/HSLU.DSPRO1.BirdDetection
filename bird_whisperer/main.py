@@ -22,6 +22,8 @@ def main():
 
   set_seed(SEED) # set seed for repro
 
+	train_dataloader, test_dataloader, labels_unique = get_dataloaders(dataset_root, augmented_run, spec_augment=spec_aug, seed=seed, batch_size=batch_size, num_workers=num_workers)
+
   save_model_path = os.path.join(os.path.dirname(__file__), "/../data/bird-whisperer/models") # define path to where the model will be saved
   os.makedirs(save_model_path, exist_ok=True)
   print(f"Saving model to: {save_model_path}")
