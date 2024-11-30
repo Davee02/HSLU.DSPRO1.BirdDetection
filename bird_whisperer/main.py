@@ -2,6 +2,8 @@ import os
 import random
 import numpy as np
 import torch
+from utils import trainer
+from utils.datasets.dataset_utils import get_dataloaders
 from whisper_model import whisper_model
 
 LR = 0.01
@@ -22,16 +24,22 @@ def main():
 
   set_seed(SEED) # set seed for repro
 
-	train_dataloader, test_dataloader, labels_unique = get_dataloaders(dataset_root, augmented_run, spec_augment=spec_aug, seed=seed, batch_size=batch_size, num_workers=num_workers)
+  dataset_root = os.path.join(os.path.dirname(__file__), "../data/processed/bird-whisperer") # define path to dataset
+  train_dataloader, test_dataloader, unique_labels = get_dataloaders(dataset_root)
 
-  save_model_path = os.path.join(os.path.dirname(__file__), "/../data/bird-whisperer/models") # define path to where the model will be saved
-  os.makedirs(save_model_path, exist_ok=True)
-  print(f"Saving model to: {save_model_path}")
+  save_model_path = os.path.join(os.path.dirname(__file__), "../data/bird-whisperer/models") # define path to where the model will be saved
+  print(f"Saving models to: {save_model_path}")
 
-  model = whisper_model.WhisperModel(n_classes=100) 
+  model = whisper_model.WhisperModel(n_classes=len(unique_labels), models_root_dir=save_model_path, variant="tiny") 
   model = model.to(device) # move model to device (GPU or CPU)
 
+  criterion = torch.nn.CrossEntropyLoss() # loss function
   optimizer = torch.optim.SGD(model.parameters(), lr=LR)
+
+  start_epoch = 0
+  n_epochs = 1
+  models_save_dir = os.path.join(save_model_path, "trained")
+  trainer.train(device, model, train_dataloader, test_dataloader, criterion, optimizer, unique_labels, start_epoch, n_epochs, models_save_dir)
 
 if __name__ == "__main__":
   main()
