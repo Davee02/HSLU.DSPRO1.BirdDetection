@@ -65,6 +65,28 @@ class AudioProcessor:
         denoised_stft = mask * magnitude * np.exp(1j * phase)
         return librosa.istft(denoised_stft)
 
+    def ensure_target_duration(self, y):
+        """
+        Trims or pads the audio signal to the target duration.
+
+        Parameters:
+        y (np.ndarray): The audio signal to process.
+
+        Returns:
+        np.ndarray: The audio signal of fixed duration.
+        """
+        target_length = self.segment_duration * self.sample_rate - 1
+        if len(y) > target_length:
+            # Trim the audio
+            return y[:target_length]
+        elif len(y) < target_length:
+            # Repeat the audio to reach the target length
+            num_repeats = target_length // len(y)
+            remainder = target_length % len(y)
+            return np.concatenate([y] * num_repeats + [y[:remainder]])
+        else:
+            return y
+
     def process_audio_file_with_denoising(self, audio_path):
         """
         Loads an audio file, applies denoising, normalization, and trims or pads it to a fixed duration.
@@ -82,17 +104,7 @@ class AudioProcessor:
         y = self.spectral_gating(y)
         y = self.normalize_audio(y)
 
-        target_length = self.segment_duration * self.sample_rate
-        if len(y) > target_length:
-            # Trim the audio
-            return y[:target_length]
-        elif len(y) < target_length:
-            # Repeat the audio to reach the target length
-            num_repeats = target_length // len(y)
-            remainder = target_length % len(y)
-            return np.concatenate([y] * num_repeats + [y[:remainder]])
-        else:
-            return y
+        return self.ensure_target_duration(y)
 
     def create_log_mel_spectrogram(self, y, n_fft=2048, hop_length=512, n_mels=128):
         """
@@ -231,4 +243,5 @@ class AudioProcessor:
             y = librosa.effects.time_stretch(y, rate=np.random.uniform(0.95, 1.05))
         if np.random.rand() < 0.3:
             y = self.add_gaussian_noise(y)
-        return y
+
+        return self.ensure_target_duration(y)
