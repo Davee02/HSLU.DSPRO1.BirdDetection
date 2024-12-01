@@ -34,7 +34,7 @@ class CNN(torch.nn.Module):
         return x
 
 class WhisperModel(torch.nn.Module):
-    def __init__(self, n_classes, models_root_dir, variant="base"):
+    def __init__(self, n_classes, models_root_dir, device, variant="base"):
         super(WhisperModel, self).__init__()
         assert n_classes is not None, "'n_classes' cannot be None. Specify 'n_classes' present in the dataset."
         
@@ -45,7 +45,7 @@ class WhisperModel(torch.nn.Module):
 
         # Compute the output shape of the Whisper encoder
         with torch.no_grad():
-            dummy_audio_input = torch.randn(1, 80, 3000) # Batch size = 1, Mel-spectrogram dimensions
+            dummy_audio_input = torch.randn(1, 80, 3000, device=device) # Batch size = 1, Mel-spectrogram dimensions
             encoder_output = self.audio_encoder(dummy_audio_input)
             encoder_output_shape = encoder_output.shape[-2:] # Take spatial dimensions
 
