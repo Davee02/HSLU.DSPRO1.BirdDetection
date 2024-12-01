@@ -16,7 +16,8 @@ class AudioProcessor:
         self.sample_rate = sample_rate
         self.segment_duration = segment_duration
         self.target_db_level = target_db_level
-        np.random.seed(seed) 
+        np.random.seed(seed)
+        torch.manual_seed(seed)
 
     def normalize_audio(self, y):
         """
