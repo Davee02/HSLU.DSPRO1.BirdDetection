@@ -5,7 +5,9 @@ import torch
 from tqdm import tqdm
 
 
-def train(device, model, train_dataloader, test_dataloader, criterion, optimizer, unique_labels, start_epoch, n_epochs, save_model_path, json_log_path):
+def train(device, model, train_dataloader, test_dataloader, criterion, optimizer, unique_labels, start_epoch, n_epochs, save_model_path, json_log_path, debug=False):
+  torch.autograd.set_detect_anomaly(debug)
+    
   best_macro_avg_f1 = 0
   best_epoch = 0
   train_losses = []
@@ -64,17 +66,17 @@ def run_epoch(device, model, train_dataloader, criterion, optimizer, unique_labe
   loss_vals = []
 
   for batch_idx, batch in enumerate(tqdm(train_dataloader)):
-    if batch_idx > 5:
-      break
-    log_mels, labels, _ = batch
+    log_mels, labels, _ = batch     
     log_mels, labels = log_mels.float().to(device), labels.to(device)
-
+      
     optimizer.zero_grad() # zero the gradiants of the parameters
-    logits = model(log_mels) # forward pass through the model
+    logits = model(log_mels) # forward pass through the model   
     loss = criterion(logits, labels) # compute loss
-    loss.backward() # compute gradients of the parameters
-    optimizer.step() # update the weights with gradients
 
+    loss.backward() # compute gradients of the parameters
+    torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
+    optimizer.step() # update the weights with gradients
+      
     _, preds = torch.max(logits, 1)
     predicted_labels.extend(preds.cpu().detach().numpy())
     actual_labels.extend(labels.cpu().detach().numpy())
@@ -99,9 +101,6 @@ def test_model(device, model, test_dataloader, criterion, unique_labels):
       loss_vals = []
 
       for batch_idx, batch in enumerate(tqdm(test_dataloader)):
-        if batch_idx > 5:
-          break
-
         log_mels, labels, _ = batch
         log_mels, labels = log_mels.float().to(device), labels.to(device)
 

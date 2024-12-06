@@ -6,10 +6,11 @@ from trainer import train
 from logging_utils import setup_logging
 from datasets.dataset_utils import get_dataloaders
 from whisper_model import whisper_model
+import torch.optim as optim
 
-LR = 0.01
+LR = 3e-4
 SEED = 42
-EPOCHS = 2
+EPOCHS = 10
 WITH_AUGMENTED = True
 
 def set_seed(seed):
@@ -54,8 +55,8 @@ def main(json_log_file_path):
   model = model.to(device) # move model to device (GPU or CPU)
 
   criterion = torch.nn.CrossEntropyLoss() # loss function
-  optimizer = torch.optim.SGD(model.parameters(), lr=LR)
-
+  optimizer = torch.optim.AdamW(model.parameters(), lr=LR, amsgrad=True)
+    
   start_epoch = 0
   models_save_dir = os.path.join(save_model_path, "trained")
   train(device, model, train_dataloader, test_dataloader, criterion, optimizer, unique_labels, start_epoch, EPOCHS, models_save_dir, json_log_file_path)
