@@ -2,16 +2,20 @@ import os
 import random
 import numpy as np
 import torch
+
 from trainer import train
 from logging_utils import setup_logging
 from datasets.dataset_utils import get_dataloaders
 from whisper_model import whisper_model
-import torch.optim as optim
+from experiment_utils import load_from_checkpoint
 
 LR = 3e-4
 SEED = 42
 EPOCHS = 10
 WITH_AUGMENTED = True
+WHISPER_BASE_VARIANT = "tiny"
+CHECKPOINT = "checkpoint_epoch_1_loss_5.5116.pt"
+DEBUG = False
 
 def set_seed(seed):
   print(f"Setting seed: {seed}")
@@ -51,15 +55,21 @@ def main(json_log_file_path):
   save_model_path = os.path.join(os.path.dirname(__file__), "../../data/bird-whisperer/models") # define path to where the model will be saved
   print(f"Saving models to: {save_model_path}")
 
-  model = whisper_model.WhisperModel(n_classes=len(unique_labels), models_root_dir=save_model_path, variant="tiny", device=device) 
-  model = model.to(device) # move model to device (GPU or CPU)
-
-  criterion = torch.nn.CrossEntropyLoss() # loss function
-  optimizer = torch.optim.AdamW(model.parameters(), lr=LR, amsgrad=True)
-    
-  start_epoch = 0
   models_save_dir = os.path.join(save_model_path, "trained")
-  train(device, model, train_dataloader, test_dataloader, criterion, optimizer, unique_labels, start_epoch, EPOCHS, models_save_dir, json_log_file_path)
+
+  model = whisper_model.WhisperModel(n_classes=len(unique_labels), models_root_dir=save_model_path, variant=WHISPER_BASE_VARIANT, device=device) 
+  optimizer = torch.optim.AdamW(model.parameters(), lr=LR, amsgrad=True)
+  start_epoch = 0
+
+  if CHECKPOINT:
+    checkpoint_path = os.path.join(models_save_dir, CHECKPOINT)
+    print(f"Loading model from checkpoint: {checkpoint_path}")
+    model, optimizer, start_epoch, _, best_f1_score, best_epoch = load_from_checkpoint(checkpoint_path, model, optimizer)
+
+  model = model.to(device) # move model to device (GPU or CPU)
+  criterion = torch.nn.CrossEntropyLoss() # loss function
+
+  train(device, model, train_dataloader, test_dataloader, criterion, optimizer, unique_labels, start_epoch, EPOCHS, models_save_dir, json_log_file_path, best_f1_score=best_f1_score, best_epoch=best_epoch, debug=DEBUG)
 
 if __name__ == "__main__":
   _, json_log_file_path = setup_logging()
