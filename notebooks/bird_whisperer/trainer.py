@@ -5,11 +5,11 @@ import torch
 from tqdm import tqdm
 
 
-def train(device, model, train_dataloader, test_dataloader, criterion, optimizer, unique_labels, start_epoch, n_epochs, save_model_path, json_log_path, debug=False):
+def train(device, model, train_dataloader, test_dataloader, criterion, optimizer, unique_labels, start_epoch, n_epochs, save_model_path, json_log_path, best_f1_score=0, best_epoch=0, debug=False):
   torch.autograd.set_detect_anomaly(debug)
-    
-  best_macro_avg_f1 = 0
-  best_epoch = 0
+
+  best_macro_avg_f1 = best_f1_score
+  best_epoch = best_epoch
   train_losses = []
   test_epochs = []
   test_metrics = []
@@ -25,7 +25,7 @@ def train(device, model, train_dataloader, test_dataloader, criterion, optimizer
     print(f"Train Epoch: {epoch}, Macro Avg F1: {macro_avg_f1_train:0.4f}, Avg Loss: {avg_epoch_loss:0.4f}")
 
     # Save the model
-    save_model(model, optimizer, epoch, avg_epoch_loss, save_model_path)
+    save_model(model, optimizer, epoch, avg_epoch_loss, save_model_path, best_macro_avg_f1, best_epoch)
 
     # Test the model
     print(f"\nTesting the model after Epoch {epoch}...")
@@ -33,7 +33,13 @@ def train(device, model, train_dataloader, test_dataloader, criterion, optimizer
     macro_avg_f1_test = test_classification_report["macro avg"]["f1-score"]
     print_test_scores(test_classification_report, avg_test_loss)
 
-    test_metrics.append([test_classification_report['macro avg']['f1-score'], test_classification_report['macro avg']['precision'], test_classification_report['macro avg']['recall'], test_classification_report['accuracy'], avg_test_loss])
+    test_metrics.append({
+        "f1-score": test_classification_report['macro avg']['f1-score'],
+        "precision": test_classification_report['macro avg']['precision'],
+        "recall": test_classification_report['macro avg']['recall'],
+        "accuracy": test_classification_report['accuracy'],
+        "avg_loss": avg_test_loss
+    })
     test_epochs.append(epoch)
 
     # Save the best model based on macro_avg_f1 score
@@ -42,7 +48,7 @@ def train(device, model, train_dataloader, test_dataloader, criterion, optimizer
         best_epoch = epoch
         print(f"\n{'Best Macro Avg F1-Score':<20} = {best_macro_avg_f1:0.4f}")
         print(f"Saving the best model at '{save_model_path}' ... ")
-        save_model(model, optimizer, epoch, avg_epoch_loss, save_model_path, "best_model.pt")
+        save_model(model, optimizer, epoch, avg_epoch_loss, save_model_path, best_macro_avg_f1, best_epoch, "best_model.pt")
 
     results = {
       "train_epoch": list(range(start_epoch, epoch + 1)),
@@ -100,7 +106,7 @@ def test_model(device, model, test_dataloader, criterion, unique_labels):
       predicted_labels = []
       loss_vals = []
 
-      for batch_idx, batch in enumerate(tqdm(test_dataloader)):
+      for batch in tqdm(test_dataloader):
         log_mels, labels, _ = batch
         log_mels, labels = log_mels.float().to(device), labels.to(device)
 
@@ -119,7 +125,7 @@ def test_model(device, model, test_dataloader, criterion, unique_labels):
       
       return class_report, avg_test_loss
 
-def save_model(model, optimizer, epoch, epoch_avg_loss, save_model_path, model_name=None):
+def save_model(model, optimizer, epoch, epoch_avg_loss, save_model_path, best_f1_score, best_epoch, model_name=None):
   model_name = model_name if model_name is not None else f"checkpoint_epoch_{epoch}_loss_{epoch_avg_loss:0.4f}.pt"
   save_path = os.path.join(save_model_path, model_name)
 
@@ -127,7 +133,9 @@ def save_model(model, optimizer, epoch, epoch_avg_loss, save_model_path, model_n
       "epoch": epoch,
       "model_state_dict": model.state_dict(),
       "optimizer_state_dict": optimizer.state_dict(),
-      "epoch_avg_loss": epoch_avg_loss
+      "epoch_avg_loss": epoch_avg_loss,
+      "best_f1_score": best_f1_score,
+      "best_epoch": best_epoch
   }, save_path)
 
 def print_test_scores(classification_report_test, avg_test_loss):
