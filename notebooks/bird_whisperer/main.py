@@ -33,6 +33,8 @@ def print_dataset_info(train_dataloader, test_dataloader, args):
     print(f"Use augmented data: {args.with_augmented}\n\n")
 
 def main(json_log_file_path, args):
+  torch.set_float32_matmul_precision('high')
+    
   print("\n================================= Bird Whisperer Trainer =================================")
   print(f"Arguments: {args}\n")
 
@@ -68,7 +70,11 @@ def main(json_log_file_path, args):
   model = model.to(device) # move model to device (GPU or CPU)
   criterion = torch.nn.CrossEntropyLoss() # loss function
 
-  train(device, model, train_dataloader, test_dataloader, criterion, optimizer, unique_labels, start_epoch, args.epochs, models_save_dir, json_log_file_path, best_f1_score=best_f1_score, best_epoch=best_epoch, debug=args.debug)
+  print("Compiling model...")
+  compiled_model = torch.compile(model)
+  print("Successfully compiled model")
+    
+  train(device, compiled_model, train_dataloader, test_dataloader, criterion, optimizer, unique_labels, start_epoch, args.epochs, models_save_dir, json_log_file_path, best_f1_score=best_f1_score, best_epoch=best_epoch, debug=args.debug)
 
 if __name__ == "__main__":
   args = parse_arguments()
