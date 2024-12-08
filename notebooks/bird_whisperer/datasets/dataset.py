@@ -20,5 +20,5 @@ class XenoCantoDataset(Dataset):
 
         mel = torch.load(audio_full_path)
         label = torch.tensor(self.labels[index])
-
+        
         return mel, label, self.label2bird_dict[label.item()]
