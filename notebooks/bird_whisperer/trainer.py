@@ -4,24 +4,22 @@ from sklearn.metrics import classification_report, accuracy_score
 import torch
 from tqdm import tqdm
 
-
 def train(device, model, train_dataloader, test_dataloader, criterion, optimizer, unique_labels, start_epoch, n_epochs, save_model_path, json_log_path, best_f1_score=0, best_epoch=0, debug=False):
   torch.autograd.set_detect_anomaly(debug)
 
   best_macro_avg_f1 = best_f1_score
   best_epoch = best_epoch
-  train_losses = []
-  test_epochs = []
   test_metrics = []
+  train_metrics = []
 
   os.makedirs(save_model_path, exist_ok=True)
 
   for epoch in range(start_epoch, n_epochs):
     # Train the model
     train_classification_report, avg_epoch_loss = run_epoch(device, model, train_dataloader, criterion, optimizer, unique_labels, epoch)
+    train_metrics.append(get_metrics_dict(train_classification_report, avg_epoch_loss, epoch))
     macro_avg_f1_train = train_classification_report["macro avg"]["f1-score"]
 
-    train_losses.append(avg_epoch_loss)
     print(f"Train Epoch: {epoch}, Macro Avg F1: {macro_avg_f1_train:0.4f}, Avg Loss: {avg_epoch_loss:0.4f}")
 
     # Save the model
@@ -33,14 +31,7 @@ def train(device, model, train_dataloader, test_dataloader, criterion, optimizer
     macro_avg_f1_test = test_classification_report["macro avg"]["f1-score"]
     print_test_scores(test_classification_report, avg_test_loss)
 
-    test_metrics.append({
-        "f1-score": test_classification_report['macro avg']['f1-score'],
-        "precision": test_classification_report['macro avg']['precision'],
-        "recall": test_classification_report['macro avg']['recall'],
-        "accuracy": test_classification_report['accuracy'],
-        "avg_loss": avg_test_loss
-    })
-    test_epochs.append(epoch)
+    test_metrics.append(get_metrics_dict(test_classification_report, avg_test_loss, epoch))
 
     # Save the best model based on macro_avg_f1 score
     if macro_avg_f1_test > best_macro_avg_f1:
@@ -51,10 +42,8 @@ def train(device, model, train_dataloader, test_dataloader, criterion, optimizer
         save_model(model, optimizer, epoch, avg_epoch_loss, save_model_path, best_macro_avg_f1, best_epoch, "best_model.pt")
 
     results = {
-      "train_epoch": list(range(start_epoch, epoch + 1)),
-      "train_loss": train_losses,
-      "test_epoch": test_epochs,
-      "epoch_test_metrics": test_metrics
+      "train_metrics": train_metrics,
+      "test_metrics": test_metrics,
     }
 
     with open(json_log_path, 'w') as f:
@@ -168,3 +157,14 @@ def print_test_scores(classification_report_test, avg_test_loss):
   print("  Recall: {:.4f}".format(summary['weighted avg']['recall']))
   print("  F1-Score: {:.4f}".format(summary['weighted avg']['f1-score']))
   print("\n==============================================\n\n")
+
+
+def get_metrics_dict(classification_report, loss, epoch):
+  return {
+    "f1-score": classification_report['macro avg']['f1-score'],
+    "precision": classification_report['macro avg']['precision'],
+    "recall": classification_report['macro avg']['recall'],
+    "accuracy": classification_report['accuracy'],
+    "avg_loss": loss,
+    "epoch": epoch
+    }
