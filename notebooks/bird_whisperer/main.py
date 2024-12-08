@@ -55,7 +55,7 @@ def main(json_log_file_path, args):
   models_save_dir = os.path.join(save_model_path, "trained")
 
   model = whisper_model.WhisperModel(n_classes=len(unique_labels), models_root_dir=save_model_path, variant=args.whisper_base_variant, device=device) 
-  optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr, amsgrad=True)
+  optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr, amsgrad=True, weight_decay=args.weight_decay)
 
   start_epoch = 0
   best_epoch = 0

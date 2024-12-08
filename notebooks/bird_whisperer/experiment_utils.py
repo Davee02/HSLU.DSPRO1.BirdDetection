@@ -27,5 +27,6 @@ def parse_arguments():
     parser.add_argument("--checkpoint_file", type=str, default=None, help="Checkpoint file to load (default: None)")
     parser.add_argument("--debug", action="store_true", default=False, help="Debug mode (default: False)")
     parser.add_argument("--batch_size", type=int, default=16, help="Batch size (default: 16)")
+    parser.add_argument("--weight_decay", type=float, default=1e-2, help="Weight decay for AdamW optimizer (default: 1e-2)")
 
     return parser.parse_args()
