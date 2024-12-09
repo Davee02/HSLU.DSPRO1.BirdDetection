@@ -2,6 +2,7 @@ import os
 import random
 import numpy as np
 import torch
+from torchinfo import summary
 
 from trainer import train
 from logging_utils import setup_logging
@@ -56,6 +57,9 @@ def main(json_log_file_path, args):
 
   model = whisper_model.WhisperModel(n_classes=len(unique_labels), models_root_dir=save_model_path, variant=args.whisper_base_variant, device=device) 
   optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr, amsgrad=True, weight_decay=args.weight_decay)
+  print("\n===================== Model Summary =====================\n")
+  summary(model, input_size=(1, 80, 3000), col_names=["input_size", "output_size", "kernel_size"], depth=3)
+  print("\n\n")
 
   start_epoch = 0
   best_epoch = 0
