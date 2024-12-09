@@ -11,6 +11,7 @@ class CNN(torch.nn.Module):
         self.conv1 = nn.Conv2d(1, 6, 5)
         self.pool = nn.MaxPool2d(2, 2)
         self.conv2 = nn.Conv2d(6, 16, 5)
+        self.dropout = nn.Dropout(p=0.3)  # Add dropout layer
 
         # Dynamically calculate the size of the flattened features
         with torch.no_grad():
@@ -26,9 +27,9 @@ class CNN(torch.nn.Module):
     def forward(self, x):
         x = self.pool(F.relu(self.conv1(x)))
         x = self.pool(F.relu(self.conv2(x)))
-        x = x.view(x.size(0), -1)  # Flatten
-        x = F.relu(self.fc1(x))
-        x = F.relu(self.fc2(x))
+        x = x.view(x.size(0), -1) # Flatten
+        x = self.dropout(F.relu(self.fc1(x)))
+        x = self.dropout(F.relu(self.fc2(x))) 
         x = self.fc3(x)
 
         return x
