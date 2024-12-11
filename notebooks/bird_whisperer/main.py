@@ -56,7 +56,9 @@ def main(json_log_file_path, args):
   models_save_dir = os.path.join(save_model_path, "trained")
 
   model = whisper_model.WhisperModel(n_classes=len(unique_labels), models_root_dir=save_model_path, variant=args.whisper_base_variant, device=device) 
+  model = model.to(device) # move model to device (GPU or CPU)
   optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr, amsgrad=True, weight_decay=args.weight_decay)
+
   print("\n===================== Model Summary =====================\n")
   summary(model, input_size=(1, 80, 3000), col_names=["input_size", "output_size", "kernel_size"], depth=3)
   print("\n\n")
@@ -69,16 +71,11 @@ def main(json_log_file_path, args):
   if checkpoint_file:
     checkpoint_path = os.path.join(models_save_dir, checkpoint_file)
     print(f"Loading model from checkpoint: {checkpoint_path}")
-    model, optimizer, start_epoch, _, best_f1_score, best_epoch = load_from_checkpoint(checkpoint_path, model, optimizer)
+    model, optimizer, start_epoch, _, best_f1_score, best_epoch = load_from_checkpoint(checkpoint_path, model, optimizer, device)
 
-  model = model.to(device) # move model to device (GPU or CPU)
   criterion = torch.nn.CrossEntropyLoss() # loss function
 
-  print("Compiling model...")
-  compiled_model = torch.compile(model)
-  print("Successfully compiled model")
-    
-  train(device, compiled_model, train_dataloader, test_dataloader, criterion, optimizer, unique_labels, start_epoch, args.epochs, models_save_dir, json_log_file_path, best_f1_score=best_f1_score, best_epoch=best_epoch, debug=args.debug)
+  train(device, model, train_dataloader, test_dataloader, criterion, optimizer, unique_labels, start_epoch + 1, args.epochs, models_save_dir, json_log_file_path, best_f1_score=best_f1_score, best_epoch=best_epoch, debug=args.debug)
 
 if __name__ == "__main__":
   args = parse_arguments()
