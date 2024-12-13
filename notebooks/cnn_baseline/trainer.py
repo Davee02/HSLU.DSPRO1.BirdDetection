@@ -77,6 +77,8 @@ def run_epoch(device, model, train_dataloader, criterion, optimizer, unique_labe
         # Debugging: Print logits and labels shapes
         print(f"Batch Index: {batch_idx}")
         print(f"Logits shape: {logits.shape}, Labels shape: {labels.shape}")
+        assert logits.size(0) == labels.size(0), "Mismatch between logits and labels batch size."
+        print(f"Input batch shape: {log_mels.shape}, Label batch shape: {labels.shape}")
         print(f"Input batch size: {log_mels.size(0)}, Label batch size: {labels.size(0)}")
         
         loss = criterion(logits, labels) # compute loss

@@ -49,10 +49,10 @@ def main(json_log_file_path):
     train_dataloader, test_dataloader, unique_labels = get_dataloaders(dataset_root, with_augmented=WITH_AUGMENTED)
     print_dataset_info(train_dataloader, test_dataloader)
 
-    save_model_path = os.path.join(os.path.dirname(__file__), "../../data/bird-whisperer/models")
+    save_model_path = os.path.join(os.path.dirname(__file__), "../../data/basic_cnn/models")
     print(f"Saving models to: {save_model_path}")
 
-    model = BasicCNN(n_classes=len(unique_labels), input_channels=16)
+    model = BasicCNN(input_shape=(80, 3000), n_classes=len(unique_labels), input_channels=16)
     model = model.to(device)
     
     criterion = torch.nn.CrossEntropyLoss()

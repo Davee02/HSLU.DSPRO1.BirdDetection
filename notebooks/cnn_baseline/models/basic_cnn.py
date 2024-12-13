@@ -4,14 +4,20 @@ import torch
 
 
 class BasicCNN(nn.Module):
-    def __init__(self, n_classes, input_channels=1):
+    def __init__(self, input_shape, n_classes, input_channels=16):
         super(BasicCNN, self).__init__()
         self.conv1 = nn.Conv2d(input_channels, 32, kernel_size=3, padding=1)
         self.conv2 = nn.Conv2d(32, 64, kernel_size=3, padding=1)
         self.pool = nn.MaxPool2d(kernel_size=2, stride=2)
 
-        # Fully connected layers to be dynamically initialized
-        self.fc1 = None
+        # Dynamically calculate the size of the flattened features
+        with torch.no_grad():
+            dummy_input = torch.zeros(1, input_channels, *input_shape)
+            dummy_output = self.pool(F.relu(self.conv1(dummy_input)))
+            dummy_output = self.pool(F.relu(self.conv2(dummy_output)))
+            self.flattened_size = dummy_output.numel()
+
+        self.fc1 = nn.Linear(self.flattened_size, 128)
         self.fc2 = nn.Linear(128, n_classes)
 
     def forward(self, x):
@@ -24,10 +30,6 @@ class BasicCNN(nn.Module):
         # Flatten tensor while maintaining batch size
         x = x.view(x.size(0), -1)  # Flatten
         print(f"Shape after flattening: {x.shape}")
-
-        # Dynamically initialize fc1 if not already done
-        if self.fc1 is None:
-            self.fc1 = nn.Linear(x.size(1), 128).to(x.device)
 
         x = F.relu(self.fc1(x))
         logits = self.fc2(x)
