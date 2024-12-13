@@ -207,9 +207,9 @@ def validate(device, model, val_loader, criterion):
     return accuracy, macro_avg_f1, class_report
 
 if __name__ == "__main__":
-    train_spectrogram_folder = "../../data/processed/bird-whisperer/spectrograms/train/"
+    train_spectrogram_folder = "../../data/processed/bird-whisperer/spectograms/train/"
     train_parquet_file = "../../data/cleaned/80_20_cleaned_train.parquet"
-    test_spectrogram_folder = "../../data/processed/bird-whisperer/spectrograms/test/"
+    test_spectrogram_folder = "../../data/processed/bird-whisperer/spectograms/test/"
     test_parquet_file = "../../data/cleaned/80_20_cleaned_test.parquet"
 
     train_file_index = {}
