@@ -14,7 +14,7 @@ def train(device, model, train_dataloader, test_dataloader, criterion, optimizer
 
   os.makedirs(save_model_path, exist_ok=True)
 
-  for epoch in range(start_epoch, n_epochs):
+  for epoch in range(start_epoch, n_epochs + 1):
     # Train the model
     train_classification_report, avg_epoch_loss = run_epoch(device, model, train_dataloader, criterion, optimizer, unique_labels, epoch)
     train_metrics.append(get_metrics_dict(train_classification_report, avg_epoch_loss, epoch))
