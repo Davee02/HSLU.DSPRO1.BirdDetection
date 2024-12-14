@@ -11,7 +11,7 @@ from models.basic_cnn import BasicCNN
 
 LR = 0.01
 SEED = 42
-EPOCHS = 2
+EPOCHS = 20
 WITH_AUGMENTED = True
 
 def set_seed(seed):
@@ -52,7 +52,7 @@ def main(json_log_file_path):
     save_model_path = os.path.join(os.path.dirname(__file__), "../../data/basic_cnn/models")
     print(f"Saving models to: {save_model_path}")
 
-    model = BasicCNN(input_shape=(80, 3000), n_classes=len(unique_labels), input_channels=16)
+    model = BasicCNN(input_shape=(80, 3000), n_classes=len(unique_labels), input_channels=1)
     model = model.to(device)
     
     criterion = torch.nn.CrossEntropyLoss()

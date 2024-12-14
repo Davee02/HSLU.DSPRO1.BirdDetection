@@ -25,7 +25,7 @@ def train(device, model, train_dataloader, test_dataloader, criterion, optimizer
         print(f"Train Epoch: {epoch}, Macro Avg F1: {macro_avg_f1_train:0.4f}, Avg Loss: {avg_epoch_loss:0.4f}")
 
         # Save the model
-        save_model(model, optimizer, epoch, avg_epoch_loss, save_model_path)
+        save_model(model, optimizer, epoch, avg_epoch_loss, save_model_path, best_f1_score=best_macro_avg_f1, best_epoch=best_epoch)
 
         # Test the model
         print(f"\nTesting the model after Epoch {epoch}...")
@@ -42,7 +42,7 @@ def train(device, model, train_dataloader, test_dataloader, criterion, optimizer
             best_epoch = epoch
             print(f"\n{'Best Macro Avg F1-Score':<20} = {best_macro_avg_f1:0.4f}")
             print(f"Saving the best model at '{save_model_path}' ... ")
-            save_model(model, optimizer, epoch, avg_epoch_loss, save_model_path, "best_model.pt")
+            save_model(model, optimizer, epoch, avg_epoch_loss, save_model_path, best_f1_score=best_macro_avg_f1, best_epoch=best_epoch, model_name="best_model.pt")
 
         results = {
             "train_epoch": list(range(start_epoch, epoch + 1)),
@@ -66,20 +66,19 @@ def run_epoch(device, model, train_dataloader, criterion, optimizer, unique_labe
     loss_vals = []
 
     for batch_idx, batch in enumerate(tqdm(train_dataloader)):
-        if batch_idx > 5:
-          break
         log_mels, labels, _ = batch
         log_mels, labels = log_mels.float().to(device), labels.to(device)
 
+        log_mels = log_mels.unsqueeze(1)  # Add a channel dimension (assuming single channel data)
+        
         optimizer.zero_grad() # zero the gradiants of the parameters
         logits = model(log_mels) # forward pass through the model
         
         # Debugging: Print logits and labels shapes
-        print(f"Batch Index: {batch_idx}")
-        print(f"Logits shape: {logits.shape}, Labels shape: {labels.shape}")
-        assert logits.size(0) == labels.size(0), "Mismatch between logits and labels batch size."
-        print(f"Input batch shape: {log_mels.shape}, Label batch shape: {labels.shape}")
-        print(f"Input batch size: {log_mels.size(0)}, Label batch size: {labels.size(0)}")
+        #print(f"Batch Index: {batch_idx}")
+        #print(f"Logits shape: {logits.shape}, Labels shape: {labels.shape}")
+        #print(f"Input batch shape: {log_mels.shape}, Label batch shape: {labels.shape}")
+        #print(f"Input batch size: {log_mels.size(0)}, Label batch size: {labels.size(0)}")
         
         loss = criterion(logits, labels) # compute loss
         loss.backward() # compute gradients of the parameters
@@ -109,11 +108,10 @@ def test_model(device, model, test_dataloader, criterion, unique_labels):
       loss_vals = []
 
       for batch_idx, batch in enumerate(tqdm(test_dataloader)):
-        if batch_idx > 5:
-          break
-
         log_mels, labels, _ = batch
         log_mels, labels = log_mels.float().to(device), labels.to(device)
+
+        log_mels = log_mels.unsqueeze(1)  # Add a channel dimension (assuming single channel data)
 
         logits = model(log_mels) # forward pass through the model
         loss = criterion(logits, labels) # compute loss
@@ -130,22 +128,24 @@ def test_model(device, model, test_dataloader, criterion, unique_labels):
       
       return class_report, avg_test_loss
 
-def save_model(model, optimizer, epoch, epoch_avg_loss, save_model_path, model_name=None):
-    model_name = model_name if model_name is not None else f"checkpoint_epoch_{epoch}_loss_{epoch_avg_loss:0.4f}.pt"
-    save_path = os.path.join(save_model_path, model_name)
+def save_model(model, optimizer, epoch, epoch_avg_loss, save_model_path, best_f1_score, best_epoch, model_name=None):
+  model_name = model_name if model_name is not None else f"checkpoint_epoch_{epoch}_loss_{epoch_avg_loss:0.4f}.pt"
+  save_path = os.path.join(save_model_path, model_name)
 
-    torch.save({
-        "epoch": epoch,
-        "model_state_dict": model.state_dict(),
-        "optimizer_state_dict": optimizer.state_dict(),
-        "epoch_avg_loss": epoch_avg_loss
-    }, save_path)
+  torch.save({
+      "epoch": epoch,
+      "model_state_dict": model.state_dict(),
+      "optimizer_state_dict": optimizer.state_dict(),
+      "epoch_avg_loss": epoch_avg_loss,
+      "best_f1_score": best_f1_score,
+      "best_epoch": best_epoch
+  }, save_path)
 
 def print_test_scores(classification_report_test, avg_test_loss):
-    print("\n\n=============== Test Metrics ===============")
-    print(f"Average Loss = {avg_test_loss:0.4f}")
+  print("\n\n=============== Test Metrics ===============")
+  print(f"Average Loss = {avg_test_loss:0.4f}")
 
-    summary = {
+  summary = {
         'accuracy': classification_report_test['accuracy'],
         'macro avg': {
             'precision': classification_report_test['macro avg']['precision'],
@@ -159,15 +159,15 @@ def print_test_scores(classification_report_test, avg_test_loss):
         }
     }
   
-    print("\nAccuracy: {:.4f}".format(summary['accuracy']))
+  print("\nAccuracy: {:.4f}".format(summary['accuracy']))
   
-    print("\nMacro Average:")
-    print("  Precision: {:.4f}".format(summary['macro avg']['precision']))
-    print("  Recall: {:.4f}".format(summary['macro avg']['recall']))
-    print("  F1-Score: {:.4f}".format(summary['macro avg']['f1-score']))
+  print("\nMacro Average:")
+  print("  Precision: {:.4f}".format(summary['macro avg']['precision']))
+  print("  Recall: {:.4f}".format(summary['macro avg']['recall']))
+  print("  F1-Score: {:.4f}".format(summary['macro avg']['f1-score']))
 
-    print("\nWeighted Average:")
-    print("  Precision: {:.4f}".format(summary['weighted avg']['precision']))
-    print("  Recall: {:.4f}".format(summary['weighted avg']['recall']))
-    print("  F1-Score: {:.4f}".format(summary['weighted avg']['f1-score']))
-    print("\n==============================================\n\n")
+  print("\nWeighted Average:")
+  print("  Precision: {:.4f}".format(summary['weighted avg']['precision']))
+  print("  Recall: {:.4f}".format(summary['weighted avg']['recall']))
+  print("  F1-Score: {:.4f}".format(summary['weighted avg']['f1-score']))
+  print("\n==============================================\n\n")
