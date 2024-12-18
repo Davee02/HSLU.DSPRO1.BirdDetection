@@ -1,3 +1,4 @@
+
 import os
 import pandas as pd
 from torch.utils.data import DataLoader
@@ -26,7 +27,7 @@ def get_train_test_data(train_df, test_df, bird2label_dict, seed=42):
 
     return audio_files_paths_train, labels_train, audio_files_paths_test, labels_test, labels_unique
 
-def get_dataloaders(dataset_root, batch_size=16, num_workers=4, with_augmented=True):
+def get_dataloaders(dataset_root, batch_size=16, num_workers=2, with_augmented=True):
     train_parquet_path = os.path.join(dataset_root, "train.parquet")
     test_parquet_path = os.path.join(dataset_root, "test.parquet")
 
