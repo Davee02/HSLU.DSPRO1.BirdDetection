@@ -43,5 +43,6 @@ def parse_arguments():
     parser.add_argument("--train_parquet_name", type=str, default="train.parquet", help="File name of the train parquet file (default: train.parquet)")
     parser.add_argument("--test_parquet_name", type=str, default="test.parquet", help="File name of the test parquet file (default: test.parquet)")
     parser.add_argument("--dataset_root", type=dir_path, default=os.path.join(os.path.dirname(__file__), "../../data/processed/bird-whisperer"), help="Path to dataset root (default: ../../data/processed/bird-whisperer)")
+    parser.add_argument("--dropout_p", type=float, default=0.5, help="Dropout probability for the FCNs (default: 0.5)")
 
     return parser.parse_args()
