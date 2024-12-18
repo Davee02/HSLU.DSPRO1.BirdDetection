@@ -54,7 +54,7 @@ def main(json_log_file_path, args):
 
   models_save_dir = os.path.join(save_model_path, "trained")
 
-  model = whisper_model.WhisperModel(n_classes=len(unique_labels), models_root_dir=save_model_path, variant=args.whisper_base_variant, device=device) 
+  model = whisper_model.WhisperModel(n_classes=len(unique_labels), models_root_dir=save_model_path, variant=args.whisper_base_variant, device=device, dropout_p=args.dropout_p) 
   model = model.to(device) # move model to device (GPU or CPU)
   optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr, amsgrad=True, weight_decay=args.weight_decay)
 

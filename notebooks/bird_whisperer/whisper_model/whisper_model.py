@@ -6,12 +6,12 @@ from torch import nn
 import torch.nn.functional as F
 
 class CNN(torch.nn.Module):
-    def __init__(self, n_classes, input_shape):
+    def __init__(self, n_classes, input_shape, dropout_p):
         super(CNN, self).__init__()
         self.conv1 = nn.Conv2d(1, 6, 5)
         self.pool = nn.MaxPool2d(2, 2)
         self.conv2 = nn.Conv2d(6, 16, 5)
-        self.dropout = nn.Dropout(p=0.3)  # Add dropout layer
+        self.dropout = nn.Dropout(p=dropout_p)  # Add dropout layer
 
         # Dynamically calculate the size of the flattened features
         with torch.no_grad():
@@ -35,7 +35,7 @@ class CNN(torch.nn.Module):
         return x
 
 class WhisperModel(torch.nn.Module):
-    def __init__(self, n_classes, models_root_dir, device, variant="base"):
+    def __init__(self, n_classes, models_root_dir, device, dropout_p, variant="base"):
         super(WhisperModel, self).__init__()
         assert n_classes is not None, "'n_classes' cannot be None. Specify 'n_classes' present in the dataset."
         
@@ -50,7 +50,7 @@ class WhisperModel(torch.nn.Module):
             encoder_output = self.audio_encoder(dummy_audio_input)
             encoder_output_shape = encoder_output.shape[-2:] # Take spatial dimensions
 
-        self.classifier = CNN(n_classes, input_shape=encoder_output_shape)
+        self.classifier = CNN(n_classes, encoder_output_shape, dropout_p)
 
     def forward(self, x):
         # Pass input through Whisper encoder
