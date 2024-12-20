@@ -46,10 +46,7 @@ def main(json_log_file_path, args):
 
     set_seed(args.seed)
 
-    dataset_root = os.path.join(os.path.dirname(__file__), "../../data/processed/bird-whisperer")
-    train_dataloader, test_dataloader, unique_labels = get_dataloaders(
-        dataset_root, with_augmented=args.with_augmented, batch_size=args.batch_size
-    )
+    train_dataloader, test_dataloader, unique_labels = get_dataloaders(args.dataset_root, args.batch_size, 16, args.train_parquet_name, args.test_parquet_name, with_augmented=args.with_augmented)
     print_dataset_info(train_dataloader, test_dataloader, args)
 
     save_model_path = os.path.join(os.path.dirname(__file__), "../../data/basic_cnn/models")
@@ -59,7 +56,7 @@ def main(json_log_file_path, args):
     model = BasicCNN(input_shape=(80, 3000), n_classes=len(unique_labels), input_channels=1)
     model = model.to(device)
     
-    optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
+    optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr, amsgrad=True, weight_decay=args.weight_decay)
     criterion = torch.nn.CrossEntropyLoss()
 
     print("\n===================== Model Summary =====================\n")
