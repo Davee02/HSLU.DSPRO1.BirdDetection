@@ -5,7 +5,7 @@ python ../main.py --seed 42 \
   --epochs 20 \
   --with_augmented \
   --whisper_base_variant base \
-  --batch_size 24 \
+  --batch_size 16 \
   --weight_decay 1e-2 \
   --dropout_p 0.5 \
   --dataset_root /exchange/dspro01/HSLU.DSPRO1.BirdDetection/data/processed/bird-whisperer-denoised \
