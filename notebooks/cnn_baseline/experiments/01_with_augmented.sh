@@ -1,6 +1,6 @@
 #!/bin/bash
 
-python ../main.py --seed 42 \
+python3 ../main.py --seed 42 \
     --lr 3e-4 \
     --epochs 20 \
     --with_augmented \
