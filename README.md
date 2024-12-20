@@ -23,7 +23,7 @@ To open and run the project in HSLU's GPU Hub, follow these steps:
 
 1. Ensure that you are in the HSLU WLAN or VPN
 2. Open GPUHub: <https://gpuhub.labservices.ch/>
-3. Launch Server (`Minimal environment` suffices for non-DL tasks)
+3. Launch Server (`Minimal environment` suffices for non-DL tasks, else `PyTorch` is required)
 4. Clone the repository:
   1. Open a terminal in GPUHub
   2. Create a ssh key: `ssh-keygen -t ed25519`
