@@ -63,6 +63,8 @@ def run_epoch(device, model, train_dataloader, criterion, optimizer, unique_labe
   for batch_idx, batch in enumerate(tqdm(train_dataloader)):
     log_mels, labels, _ = batch     
     log_mels, labels = log_mels.float().to(device), labels.to(device)
+
+    log_mels = log_mels.unsqueeze(1) 
       
     optimizer.zero_grad() # zero the gradiants of the parameters
     logits = model(log_mels) # forward pass through the model   
@@ -98,6 +100,8 @@ def test_model(device, model, test_dataloader, criterion, unique_labels):
       for batch in tqdm(test_dataloader):
         log_mels, labels, _ = batch
         log_mels, labels = log_mels.float().to(device), labels.to(device)
+
+        log_mels = log_mels.unsqueeze(1) 
 
         logits = model(log_mels) # forward pass through the model
         loss = criterion(logits, labels) # compute loss
