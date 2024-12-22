@@ -1,0 +1,16 @@
+app:
+  host: 127.0.0.1
+  port: 5000
+
+audio:
+  sample_rate: 16000
+  segment_duration: 30
+  target_db_level: -20
+
+data:
+  train_data_path: "../../data/processed/bird-whisperer/train_cutoff.parquet"
+  test_data_path: "../../data/processed/bird-whisperer/test_cutoff.parquet"
+
+model:
+  model_dir: "../../data/bird-whisperer/models/"
+  checkpoint_path: "/mnt/d/DSPRO1/trained_models/03_base_full_with_augmented.pt"
