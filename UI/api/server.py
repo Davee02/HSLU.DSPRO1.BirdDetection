@@ -1,63 +1,77 @@
-import sys
-import io
 from pathlib import Path
+import sys
 from flask import Flask, jsonify, request
 import torch
+import io
 
 sys.path.append(str(Path(__file__).resolve().parents[2])) # add the path to the root of the project to sys.path so that we can import modules from the project
-from notebooks.audio_processing import AudioProcessor
-from notebooks.bird_whisperer.whisper_model import whisper_model
 
-def prepare_audio_stuff():
-    SAMPLE_RATE = 16 * 1000
-    SEGMENT_DURATION = 30
-    ap = AudioProcessor(sample_rate=SAMPLE_RATE, segment_duration=SEGMENT_DURATION, target_db_level=-20)
-
-    log_mel_params = {
-        "n_fft": int(0.025 * SAMPLE_RATE), # 25 milliseconds in samples
-        "hop_length": int(0.010 * SAMPLE_RATE), # 10 milliseconds in samples
-        "n_mels": 80 # Number of Mel bands
-    }
-    return ap, log_mel_params
-
-def preprocess_audio(audio_data, ap, log_mel_params):
-    audio_data = ap.process_audio_file_with_denoising(audio_data)
-    spectogram = ap.create_log_mel_spectrogram(audio_data, n_fft=log_mel_params["n_fft"], hop_length=log_mel_params["hop_length"], n_mels=log_mel_params["n_mels"])
-    normalized_spectogram = ap.normalize_spectrogram(spectogram)
-    return normalized_spectogram
-
-def load_model():
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    print(f"Using device: {device}")
-
-    model = whisper_model.WhisperModel(n_classes=186, models_root_dir="/home/david/git/HSLU.DSPRO1.BirdDetection/data/bird-whisperer/models/", variant="base", device=device, dropout_p=0.0) 
-    model = model.to(device) # move model to device (GPU or CPU)
-
-    checkpoint_path = "/mnt/d/DSPRO1/trained_models/03_base_full_with_augmented.pt"
-    checkpoint = torch.load(checkpoint_path, map_location=device)
-    model.load_state_dict(checkpoint["model_state_dict"])
-    model.eval()
-    return model
+from audio_processing import prepare_audio_stuff, preprocess_audio
+from model_loader import load_model
+from data_preparation import prepare_data
+from utils import load_config
 
 app = Flask(__name__)
-ap, log_mel_params = prepare_audio_stuff()
-model = load_model()
+app.json.sort_keys = False
 
-@app.route('/predict', methods=['POST'])
-def predict():
-    if 'recording' not in request.files:
-        return jsonify({'error': 'No file part in the request'}), 400
+def create_app(config):
+    # Load configurations
+    audio_config = config['audio']
+    data_config = config['data']
+    model_config = config['model']
 
-    file = request.files['recording']
-    try:
-        # Read the file as a byte stream
-        audio_data = io.BytesIO(file.read())
+    # Prepare audio processor and parameters
+    ap, log_mel_params = prepare_audio_stuff(
+        audio_config['sample_rate'],
+        audio_config['segment_duration'],
+        audio_config['target_db_level']
+    )
 
-        normalized_spectogram = preprocess_audio(audio_data, ap, log_mel_params)
+    # Prepare data
+    bird2label_dict, label2bird_dict = prepare_data(
+        data_config['train_data_path'],
+        data_config['test_data_path']
+    )
 
-        return jsonify({'ok': True}), 200
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+    # Load model
+    model, device = load_model(
+        len(bird2label_dict),
+        model_config['model_dir'],
+        model_config['checkpoint_path']
+    )
+
+    @app.route('/predict', methods=['POST'])
+    def predict():
+        try:
+            if 'recording' not in request.files:
+                return jsonify({'error': 'Recording file is missing in the request'}), 400
+
+            file = request.files['recording']
+            audio_data = io.BytesIO(file.read())
+            normalized_spectogram = preprocess_audio(audio_data, ap, log_mel_params)
+
+            with torch.no_grad():
+                input_tensor = torch.tensor(normalized_spectogram).unsqueeze(0).float().to(device)
+                logits = model(input_tensor).cpu()
+                probabilities = torch.softmax(logits, dim=1).numpy()
+
+                dict_probabilities = {
+                    label2bird_dict[i]: prob.astype(float) for i, prob in enumerate(probabilities[0])
+                }
+                sorted_dict_probabilities = dict(
+                    sorted(dict_probabilities.items(), key=lambda item: item[1], reverse=True)
+                )
+
+                return jsonify({"predictions": sorted_dict_probabilities}), 200
+            
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+
+    return app
 
 if __name__ == '__main__':
-    app.run()
+    # Load configuration
+    config = load_config("./config.yaml")
+
+    app = create_app(config)
+    app.run(host=config['app']['host'], port=config['app']['port'])
