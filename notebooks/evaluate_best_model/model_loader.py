@@ -6,7 +6,7 @@ def load_model(n_classes, model_dir, checkpoint_path):
     print(f"Using device: {device}")
 
     model = whisper_model.WhisperModel(
-        n_classes=n_classes, models_root_dir=model_dir, variant="tiny", device=device, dropout_p=0.0
+        n_classes=n_classes, models_root_dir=model_dir, variant="base", device=device, dropout_p=0.0
     )
     model = model.to(device)
 
