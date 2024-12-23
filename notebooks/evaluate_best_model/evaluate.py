@@ -3,8 +3,9 @@ from sklearn.metrics import accuracy_score, classification_report, confusion_mat
 import matplotlib.pyplot as plt
 import seaborn as sns
 from torch.utils.data import DataLoader
-from your_dataset_module import BirdDataset
 from notebooks.bird_whisperer.whisper_model import whisper_model
+from utils import load_config
+from data_preparation import prepare_data
 
 # Load Model
 
