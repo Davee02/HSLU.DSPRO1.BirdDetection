@@ -9,7 +9,7 @@ from pathlib import Path
 import sys
 import torch
 from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
-from datasets.dataset_utils import get_dataloaders
+from datasets.dataset_utils import get_dataloader
 from model_loader import load_model
 from utils import load_config
 
@@ -19,7 +19,7 @@ def evaluate_model(config):
     model_config = config['model']
 
     # Prepare data loaders
-    _, test_dataloader, label2bird_dict = get_dataloaders(
+    _, test_dataloader, label2bird_dict = get_dataloader(
         data_config['dataset_root'],
         data_config['batch_size'],
         data_config['num_workers'],
