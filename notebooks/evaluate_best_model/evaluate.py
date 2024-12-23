@@ -46,7 +46,7 @@ if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
 
-    _, test_dataloader, unique_labels = get_dataloaders(
+    test_dataloader, unique_labels = get_dataloaders(
         dataset_root,
         batch_size,
         num_workers,
