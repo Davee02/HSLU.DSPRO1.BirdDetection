@@ -1,12 +1,10 @@
-audio:
-  sample_rate: 16000
-  segment_duration: 30
-  target_db_level: -20
-
 data:
-  train_data_path: "../../data/processed/bird-whisperer/train.parquet"
-  test_data_path: "../../data/processed/bird-whisperer/test.parquet"
-  evaluation_data_path: "../../data/processed/bird-whisperer/test.parquet"
+  dataset_root: "../../data/processed/bird-whisperer/"
+  batch_size: 16
+  num_workers: 4
+  train_parquet_name: "train.parquet"
+  test_parquet_name: "test.parquet"
+  with_augmented: false
 
 model:
   model_dir: "../../data/bird-whisperer/models/"

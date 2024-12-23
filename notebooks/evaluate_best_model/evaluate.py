@@ -9,7 +9,7 @@ from pathlib import Path
 import sys
 import torch
 from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
-from data_preparation import load_evaluation_data
+from datasets.dataset_utils import get_dataloaders
 from model_loader import load_model
 from utils import load_config
 
@@ -18,28 +18,35 @@ def evaluate_model(config):
     data_config = config['data']
     model_config = config['model']
 
-    # Prepare data
-    evaluation_data, true_labels, bird2label_dict, label2bird_dict = load_evaluation_data(
-        data_config['evaluation_data_path']
+    # Prepare data loaders
+    _, test_dataloader, label2bird_dict = get_dataloaders(
+        data_config['dataset_root'],
+        data_config['batch_size'],
+        data_config['num_workers'],
+        data_config['train_parquet_name'],
+        data_config['test_parquet_name'],
+        with_augmented=data_config['with_augmented']
     )
 
     # Load model
     model, device = load_model(
-        len(bird2label_dict),
+        len(label2bird_dict),
         model_config['model_dir'],
         model_config['checkpoint_path']
     )
-
-    # Evaluation loop
     model.eval()
+
+    true_labels = []
     predictions = []
 
+    # Evaluation loop
     with torch.no_grad():
-        for input_data in evaluation_data:
-            input_tensor = torch.tensor(input_data).unsqueeze(0).float().to(device)
-            logits = model(input_tensor).cpu()
-            predicted_label = torch.argmax(logits, dim=1).item()
-            predictions.append(predicted_label)
+        for mel_spectrograms, labels, _ in test_dataloader:
+            mel_spectrograms = mel_spectrograms.to(device)
+            logits = model(mel_spectrograms).cpu()
+            preds = torch.argmax(logits, dim=1)
+            predictions.extend(preds.numpy())
+            true_labels.extend(labels.numpy())
 
     # Map predictions to bird names
     predicted_bird_names = [label2bird_dict[pred] for pred in predictions]
@@ -49,14 +56,11 @@ def evaluate_model(config):
     print("Confusion Matrix:")
     print(confusion_matrix(true_bird_names, predicted_bird_names))
 
-    print("Classification Report:")
+    print("\nClassification Report:")
     print(classification_report(true_bird_names, predicted_bird_names))
 
-    print("Accuracy:", accuracy_score(true_bird_names, predicted_bird_names))
+    print("\nAccuracy:", accuracy_score(true_bird_names, predicted_bird_names))
 
-if __name__ == '__main__':
-    # Load configuration
+if __name__ == "__main__":
     config = load_config("./config.yaml")
-
-    # Run evaluation
     evaluate_model(config)
