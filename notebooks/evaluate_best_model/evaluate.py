@@ -1,41 +1,28 @@
+import os
 import torch
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 import matplotlib.pyplot as plt
 import seaborn as sns
-from torch.utils.data import DataLoader
-from notebooks.bird_whisperer.whisper_model import whisper_model
-from utils import load_config
-from data_preparation import prepare_data
+from datasets.dataset_utils import get_dataloaders
+from whisper_model import whisper_model
 
-# Load Model
+def plot_confusion_matrix(y_true, y_pred, class_names):
+    cm = confusion_matrix(y_true, y_pred)
+    plt.figure(figsize=(10, 8))
+    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=class_names, yticklabels=class_names)
+    plt.xlabel('Predicted Labels')
+    plt.ylabel('True Labels')
+    plt.title('Confusion Matrix')
+    plt.show()
 
-def load_model(n_species, model_dir, checkpoint_path):
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    print(f"Using device: {device}")
-
-    model = whisper_model.WhisperModel(
-        n_classes=n_species, models_root_dir=model_dir, variant="base", device=device, dropout_p=0.0
-    )
-    model = model.to(device)
-
-    checkpoint = torch.load(checkpoint_path, map_location=device)
-    model.load_state_dict(checkpoint["model_state_dict"])
+def evaluate_model(model, device, dataloader):
     model.eval()
-    print(f"Model successfully loaded from checkpoint: {checkpoint_path}")
-    return model, device
-
-# Evaluation Function
-
-def evaluate_model(model, device, dataloader, label2bird_dict):
     all_preds = []
     all_labels = []
 
     with torch.no_grad():
-        for data in dataloader:
-            inputs, labels = data
-            inputs = inputs.to(device)
-            labels = labels.to(device)
-
+        for inputs, labels, _ in dataloader:  # Third element is not needed
+            inputs, labels = inputs.to(device), labels.to(device)
             outputs = model(inputs)
             _, preds = torch.max(outputs, 1)
 
@@ -44,51 +31,48 @@ def evaluate_model(model, device, dataloader, label2bird_dict):
 
     return all_preds, all_labels
 
-# Visualize Confusion Matrix
-
-def plot_confusion_matrix(y_true, y_pred, label2bird_dict):
-    cm = confusion_matrix(y_true, y_pred)
-    class_labels = [label2bird_dict[i] for i in range(len(label2bird_dict))]
-
-    plt.figure(figsize=(10, 8))
-    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=class_labels, yticklabels=class_labels)
-    plt.xlabel('Predicted Labels')
-    plt.ylabel('True Labels')
-    plt.title('Confusion Matrix')
-    plt.show()
-
-# Main Evaluation Script
-
 if __name__ == "__main__":
-    # Configuration
-    config = load_config("./config.yaml")
-    model_config = config['model']
-    data_config = config['data']
+    dataset_root = "../../../data/processed/bird-whisperer/"
+    batch_size = 32
+    num_workers = 4
+    test_parquet_name = "test_cutoff.parquet"
+    checkpoint_path = "/mnt/d/DSPRO1/trained_models/03_base_full_with_augmented.pt"
 
-    # Prepare Data
-    bird2label_dict, label2bird_dict = prepare_data(
-        data_config['train_data_path'],
-        data_config['test_data_path']
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print(f"Using device: {device}")
+
+    _, test_dataloader, unique_labels = get_dataloaders(
+        dataset_root,
+        batch_size,
+        num_workers,
+        test_parquet_name=test_parquet_name,
+        with_augmented=False
     )
-    test_dataset = BirdDataset(data_config['test_data_path'])  # Replace with your dataset class
-    test_dataloader = DataLoader(test_dataset, batch_size=32, shuffle=False)
+    print(f"Number of test samples: {len(test_dataloader.dataset)}")
 
-    # Load Model
-    model, device = load_model(
-        len(bird2label_dict),
-        model_config['model_dir'],
-        model_config['checkpoint_path']
+    model = whisper_model.WhisperModel(
+        n_classes=len(unique_labels),
+        models_root_dir=None,  # Not used in evaluation
+        variant=None,          # Not used in evaluation
+        device=device,
+        dropout_p=0.0          # Not used in evaluation
     )
+    model = model.to(device)
 
-    # Evaluate Model
-    print("Evaluating the model...")
-    predictions, true_labels = evaluate_model(model, device, test_dataloader, label2bird_dict)
+    checkpoint = torch.load(checkpoint_path, map_location=device)
+    model.load_state_dict(checkpoint["model_state_dict"])
+    model.eval()
+    print("Model loaded successfully.")
 
-    # Calculate Metrics
+    # Evaluate
+    print("Evaluating model...")
+    predictions, true_labels = evaluate_model(model, device, test_dataloader)
+
+    # Metrics
     accuracy = accuracy_score(true_labels, predictions)
     print(f"Accuracy: {accuracy * 100:.2f}%")
     print("Classification Report:")
-    print(classification_report(true_labels, predictions, target_names=label2bird_dict.values()))
+    print(classification_report(true_labels, predictions, target_names=unique_labels))
 
-    # Plot Confusion Matrix
-    plot_confusion_matrix(true_labels, predictions, label2bird_dict)
+    # Confusion Matrix
+    plot_confusion_matrix(true_labels, predictions, unique_labels)
