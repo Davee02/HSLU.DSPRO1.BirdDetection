@@ -1,6 +1,6 @@
 data:
   dataset_root: "../../data/processed/bird-whisperer/"
-  batch_size: 16
+  batch_size: 24
   num_workers: 4
   train_parquet_name: "train.parquet"
   test_parquet_name: "test.parquet"
