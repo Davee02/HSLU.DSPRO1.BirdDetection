@@ -4,7 +4,7 @@ from sklearn.metrics import accuracy_score, classification_report, confusion_mat
 import matplotlib.pyplot as plt
 import seaborn as sns
 from datasets.dataset_utils import get_dataloaders
-from whisper_model import whisper_model
+from notebooks.bird_whisperer.whisper_model import whisper_model
 
 def plot_confusion_matrix(y_true, y_pred, class_names):
     cm = confusion_matrix(y_true, y_pred)
