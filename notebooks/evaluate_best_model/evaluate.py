@@ -1,83 +1,56 @@
-import os
-import torch
-import sys
+# evaluation.py
 from pathlib import Path
+import sys
+import torch
+from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
+from data_preparation import load_evaluation_data
+from model_loader import load_model
+from utils import load_config
 
-sys.path.append(str(Path(__file__).resolve().parents[2]))
+def evaluate_model(config):
+    # Load configurations
+    data_config = config['data']
+    model_config = config['model']
 
-from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
-import matplotlib.pyplot as plt
-import seaborn as sns
-from datasets.dataset_utils import get_dataloaders
-from notebooks.bird_whisperer.whisper_model import whisper_model
+    # Prepare data
+    evaluation_data, true_labels, bird2label_dict, label2bird_dict = load_evaluation_data(
+        data_config['evaluation_data_path']
+    )
 
-def plot_confusion_matrix(y_true, y_pred, class_names):
-    cm = confusion_matrix(y_true, y_pred)
-    plt.figure(figsize=(10, 8))
-    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=class_names, yticklabels=class_names)
-    plt.xlabel('Predicted Labels')
-    plt.ylabel('True Labels')
-    plt.title('Confusion Matrix')
-    plt.show()
+    # Load model
+    model, device = load_model(
+        len(bird2label_dict),
+        model_config['model_dir'],
+        model_config['checkpoint_path']
+    )
 
-def evaluate_model(model, device, dataloader):
+    # Evaluation loop
     model.eval()
-    all_preds = []
-    all_labels = []
+    predictions = []
 
     with torch.no_grad():
-        for inputs, labels, _ in dataloader:  # Third element is not needed
-            inputs, labels = inputs.to(device), labels.to(device)
-            outputs = model(inputs)
-            _, preds = torch.max(outputs, 1)
+        for input_data in evaluation_data:
+            input_tensor = torch.tensor(input_data).unsqueeze(0).float().to(device)
+            logits = model(input_tensor).cpu()
+            predicted_label = torch.argmax(logits, dim=1).item()
+            predictions.append(predicted_label)
 
-            all_preds.extend(preds.cpu().numpy())
-            all_labels.extend(labels.cpu().numpy())
+    # Map predictions to bird names
+    predicted_bird_names = [label2bird_dict[pred] for pred in predictions]
+    true_bird_names = [label2bird_dict[true] for true in true_labels]
 
-    return all_preds, all_labels
+    # Metrics calculation
+    print("Confusion Matrix:")
+    print(confusion_matrix(true_bird_names, predicted_bird_names))
 
-if __name__ == "__main__":
-    dataset_root = "../../data/processed/bird-whisperer/"
-    batch_size = 32
-    num_workers = 4
-    test_parquet_name = "test.parquet"
-    checkpoint_path = "/mnt/d/DSPRO1/trained_models/03_base_full_with_augmented.pt"
-
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    print(f"Using device: {device}")
-
-    test_dataloader, unique_labels = get_dataloaders(
-        dataset_root,
-        batch_size,
-        num_workers,
-        test_parquet_name=test_parquet_name,
-        with_augmented=False
-    )
-    print(f"Number of test samples: {len(test_dataloader.dataset)}")
-
-    model = whisper_model.WhisperModel(
-        n_classes=len(unique_labels),
-        models_root_dir=None,  # Not used in evaluation
-        variant=None,          # Not used in evaluation
-        device=device,
-        dropout_p=0.0          # Not used in evaluation
-    )
-    model = model.to(device)
-
-    checkpoint = torch.load(checkpoint_path, map_location=device)
-    model.load_state_dict(checkpoint["model_state_dict"])
-    model.eval()
-    print("Model loaded successfully.")
-
-    # Evaluate
-    print("Evaluating model...")
-    predictions, true_labels = evaluate_model(model, device, test_dataloader)
-
-    # Metrics
-    accuracy = accuracy_score(true_labels, predictions)
-    print(f"Accuracy: {accuracy * 100:.2f}%")
     print("Classification Report:")
-    print(classification_report(true_labels, predictions, target_names=unique_labels))
+    print(classification_report(true_bird_names, predicted_bird_names))
 
-    # Confusion Matrix
-    plot_confusion_matrix(true_labels, predictions, unique_labels)
+    print("Accuracy:", accuracy_score(true_bird_names, predicted_bird_names))
+
+if __name__ == '__main__':
+    # Load configuration
+    config = load_config("./config.yaml")
+
+    # Run evaluation
+    evaluate_model(config)
