@@ -1,12 +1,12 @@
 import torch
 from notebooks.bird_whisperer.whisper_model import whisper_model
 
-def load_model(n_species, model_dir, checkpoint_path):
+def load_model(n_classes, model_dir, checkpoint_path):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
 
     model = whisper_model.WhisperModel(
-        n_classes=n_species, models_root_dir=model_dir, variant="base", device=device, dropout_p=0.0
+        n_classes=n_classes, models_root_dir=model_dir, variant="tiny", device=device, dropout_p=0.0
     )
     model = model.to(device)
 
