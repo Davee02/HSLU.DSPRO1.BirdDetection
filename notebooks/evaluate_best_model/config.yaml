@@ -8,4 +8,4 @@ data:
 
 model:
   model_dir: "../../data/bird-whisperer/models/"
-  checkpoint_path: "../../data/bird-whisperer/models/trained/best_model.pth"
+  checkpoint_path: "../../data/bird-whisperer/models/trained/best_model.pt"
