@@ -19,7 +19,7 @@ def evaluate_model(config):
     model_config = config['model']
 
     # Prepare data loaders
-    _, test_dataloader, label2bird_dict = get_dataloader(
+    test_dataloader, label2bird_dict = get_dataloader(
         data_config['dataset_root'],
         data_config['batch_size'],
         data_config['num_workers'],
