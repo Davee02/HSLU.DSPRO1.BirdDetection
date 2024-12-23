@@ -26,24 +26,19 @@ def get_train_test_data(train_df, test_df, bird2label_dict, seed=42):
 
     return audio_files_paths_train, labels_train, audio_files_paths_test, labels_test, labels_unique
 
-def get_dataloaders(dataset_root, batch_size, num_workers, train_parquet_name, test_parquet_name, with_augmented=True):
-    train_parquet_path = os.path.join(dataset_root, train_parquet_name)
+def get_dataloaders(dataset_root, batch_size, num_workers, test_parquet_name, with_augmented=True):
     test_parquet_path = os.path.join(dataset_root, test_parquet_name)
 
-    train_df = pd.read_parquet(train_parquet_path)
     test_df = pd.read_parquet(test_parquet_path)
 
     if not with_augmented:
-        train_df = train_df[train_df["augmented"] == False]
         test_df = test_df[test_df["augmented"] == False]
 
-    bird2label_dict, label2bird_dict = get_dicts(pd.concat([train_df, test_df]))
+    bird2label_dict, label2bird_dict = get_dicts(pd.concat([test_df]))
 
     assert len(bird2label_dict) == len(label2bird_dict), "Bird2Label and Label2Bird dictionaries are not equal"
-    assert train_df["species"].nunique() == test_df["species"].nunique(), "Number of unique species in train and test dataframes are not equal"
-    assert train_df["species"].nunique() == len(bird2label_dict), "Number of unique species in train dataframe and bird2label dictionary are not equal"
 
-    audio_files_paths_train, labels_train, audio_files_paths_test, labels_test, labels_unique = get_train_test_data(train_df, test_df, bird2label_dict)
+    audio_files_paths_train, labels_train, audio_files_paths_test, labels_test, labels_unique = get_train_test_data(test_df, bird2label_dict)
 
     train_spectograms_folder = os.path.join(dataset_root, "spectograms", "train")
     test_spectograms_folder = os.path.join(dataset_root, "spectograms", "test")
