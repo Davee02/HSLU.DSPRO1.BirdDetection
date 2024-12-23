@@ -23,7 +23,6 @@ def evaluate_model(config):
         data_config['dataset_root'],
         data_config['batch_size'],
         data_config['num_workers'],
-        data_config['train_parquet_name'],
         data_config['test_parquet_name'],
         with_augmented=data_config['with_augmented']
     )
