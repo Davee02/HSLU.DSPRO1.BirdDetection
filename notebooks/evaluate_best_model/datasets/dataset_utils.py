@@ -14,7 +14,7 @@ def get_test_data(test_df, bird2label_dict):
 
     return audio_files_paths_test, labels_test
 
-def get_dataloader(dataset_root, batch_size, num_workers, test_parquet_name, with_augmented=True):
+def get_dataloader(dataset_root, batch_size, num_workers, test_parquet_name, with_augmented):
     test_parquet_path = os.path.join(dataset_root, test_parquet_name)
     test_df = pd.read_parquet(test_parquet_path)
 
