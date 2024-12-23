@@ -37,10 +37,10 @@ def evaluate_model(model, device, dataloader):
     return all_preds, all_labels
 
 if __name__ == "__main__":
-    dataset_root = "../../../data/processed/bird-whisperer/"
+    dataset_root = "../../data/processed/bird-whisperer/"
     batch_size = 32
     num_workers = 4
-    test_parquet_name = "test_cutoff.parquet"
+    test_parquet_name = "test.parquet"
     checkpoint_path = "/mnt/d/DSPRO1/trained_models/03_base_full_with_augmented.pt"
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
