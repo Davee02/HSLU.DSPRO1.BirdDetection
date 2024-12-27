@@ -1,9 +1,9 @@
 data:
-  dataset_root: "../../data/processed/bird-whisperer/"
+  dataset_root: "/exchange/dspro01/HSLU.DSPRO1.BirdDetection/data/processed/bird-whisperer-denoised/"
   batch_size: 24
   num_workers: 4
-  train_parquet_name: "train.parquet"
-  test_parquet_name: "test.parquet"
+  train_parquet_name: "train_cutoff.parquet"
+  test_parquet_name: "test_cutoff.parquet"
   with_augmented: false
 
 model:
