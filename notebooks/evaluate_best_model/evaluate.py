@@ -1,6 +1,7 @@
 import sys
 from pathlib import Path
 import json
+import numpy as np
 
 # Add the root directory to the Python path
 sys.path.append(str(Path(__file__).resolve().parents[2]))
@@ -14,11 +15,9 @@ from model_loader import load_model
 from utils import load_config
 
 def evaluate_model(config):
-    # Load configurations
     data_config = config['data']
     model_config = config['model']
 
-    # Prepare data loaders
     test_dataloader, label2bird_dict = get_dataloader(
         data_config['dataset_root'],
         data_config['batch_size'],
@@ -27,7 +26,6 @@ def evaluate_model(config):
         with_augmented=data_config['with_augmented']
     )
 
-    # Load model
     model, device = load_model(
         len(label2bird_dict),
         model_config['model_dir'],
@@ -37,6 +35,7 @@ def evaluate_model(config):
 
     true_labels = []
     predictions = []
+    prediction_probs = []
 
     # Evaluation loop
     with torch.no_grad():
@@ -44,8 +43,10 @@ def evaluate_model(config):
             mel_spectrograms = mel_spectrograms.float().to(device)
             logits = model(mel_spectrograms).cpu()
             preds = torch.argmax(logits, dim=1)
-            predictions.extend(preds.numpy())
-            true_labels.extend(labels.numpy())
+            probabilities = torch.softmax(logits, dim=1).numpy()
+            prediction_probs.extend(probabilities.tolist())
+            predictions.extend(preds.numpy().tolist())
+            true_labels.extend(labels.numpy().tolist())
 
     # Map predictions to bird names
     predicted_bird_names = [label2bird_dict[pred] for pred in predictions]
@@ -54,29 +55,34 @@ def evaluate_model(config):
     # Calculate the frequency of each bird in the test set
     bird_counts = Counter(true_bird_names)
 
-    # Metrics calculation
     confusion_mat = confusion_matrix(true_bird_names, predicted_bird_names)
+    normalized_confusion_mat = confusion_mat.astype('float') / confusion_mat.sum(axis=1)[:, np.newaxis]
     class_report = classification_report(true_bird_names, predicted_bird_names, output_dict=True)
     accuracy = accuracy_score(true_bird_names, predicted_bird_names)
 
-    # Add bird counts to the classification report
     for bird, count in bird_counts.items():
         if bird in class_report:
             class_report[bird]['support'] = count
 
-    print("Confusion Matrix:")
-    print(confusion_mat)
+    # Per-class accuracy
+    per_class_accuracy = {
+        bird: confusion_mat[i, i] / bird_counts[bird]
+        for i, bird in enumerate(label2bird_dict.values()) if bird_counts[bird] > 0
+    }
 
-    print("\nClassification Report:")
-    print(classification_report(true_bird_names, predicted_bird_names))
+    # Misclassified samples
+    misclassified = [
+        {"true_label": true_bird_names[i], "predicted_label": predicted_bird_names[i], "probabilities": prediction_probs[i]}
+        for i in range(len(true_bird_names)) if true_bird_names[i] != predicted_bird_names[i]
+    ]
 
-    print("\nAccuracy:", accuracy)
-
-    # Save metrics to a JSON log file
     log_data = {
         "confusion_matrix": confusion_mat.tolist(),
+        "normalized_confusion_matrix": normalized_confusion_mat.tolist(),
         "classification_report": class_report,
-        "accuracy": accuracy
+        "accuracy": accuracy,
+        "per_class_accuracy": per_class_accuracy,
+        "misclassified_samples": misclassified
     }
 
     log_file_path = "evaluation_log.json"
