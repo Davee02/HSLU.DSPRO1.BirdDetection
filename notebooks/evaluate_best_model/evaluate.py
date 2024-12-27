@@ -72,8 +72,14 @@ def evaluate_model(config):
 
     # Misclassified samples
     misclassified = [
-        {"true_label": true_bird_names[i], "predicted_label": predicted_bird_names[i], "probabilities": prediction_probs[i]}
-        for i in range(len(true_bird_names)) if true_bird_names[i] != predicted_bird_names[i]
+        {
+            "true_label": label2bird_dict[true_labels[i]],
+            "predicted_label": label2bird_dict[predictions[i]],
+            "probabilities": {
+                label2bird_dict[class_idx]: prob for class_idx, prob in enumerate(prediction_probs[i])
+            }
+        }
+        for i in range(len(true_labels)) if true_labels[i] != predictions[i]
     ]
 
     log_data = {
