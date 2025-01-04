@@ -1,4 +1,4 @@
-# ChirpTrack - Acoustic tracking of bird species through their unique vocal patterns
+# ChirpTrack - Classification of bird species through their unique vocal patterns
 
 The goal is to build a multi-class classification model that takes a short audio file as input and outputs the predicted bird species. The project will also include the development of a simple web-based interface where users can upload an audio file, and the model will return the classification result.
 
