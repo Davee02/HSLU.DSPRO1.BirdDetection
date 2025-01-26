@@ -1,6 +1,7 @@
 from pathlib import Path
 import sys
 from flask import Flask, jsonify, request
+from flask_cors import CORS
 import torch
 import io
 
@@ -13,6 +14,7 @@ from utils import load_config
 
 app = Flask(__name__)
 app.json.sort_keys = False
+CORS(app)
 
 def create_app(config):
     # Load configurations

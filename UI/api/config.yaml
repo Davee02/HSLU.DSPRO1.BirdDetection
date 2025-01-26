@@ -13,4 +13,4 @@ data:
 
 model:
   model_dir: "../../data/bird-whisperer/models/"
-  checkpoint_path: "/mnt/d/DSPRO1/trained_models/03_base_full_with_augmented.pt"
+  checkpoint_path: "../../data/bird-whisperer/models/best_model.pt"

@@ -24,6 +24,7 @@
   grid-column: 1 / 2;
   grid-row: 1 / 2;
   text-align: center;
+  overflow-y: auto;
 }
 
 .file-upload-box, .file-display-box {
@@ -64,4 +65,45 @@
   width: 100% !important;
   height: 100% !important;
   margin: 0;
+}
+
+/* Spinner styles */
+.loading-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%; /* Takes full height of the container */
+}
+.spinner {
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border-left-color: #1b2a35;
+  animation: spin 1s linear infinite;
+  margin-top: 10px; /* Optional, for spacing */
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+/* Bird info styles */
+.bird-info {
+  max-height: 80%; /* Constrain the height to allow scrolling if content exceeds */
+  overflow-y: auto; /* Enable vertical scrolling for long content */
+  text-align: center;
+  margin-top: 20px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  background-color: #f7f7f7;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+.bird-info .bird-image {
+  width: 150px;
+  height: auto;
+  border-radius: 8px;
+  margin-top: 10px;
 }
