@@ -135,7 +135,7 @@ const AnalysePage = () => {
       }
 
       // Generate random nearby markers after analysis completes
-      generateNearbyMarkers();
+      //generateNearbyMarkers();
 
     } catch (error) {
       console.error('Error fetching bird data:', error);
@@ -165,7 +165,7 @@ const AnalysePage = () => {
     setBirdData(null);
     setImageError(false);
     setGbifId(null);
-    setNearbyMarkers([]);
+    //setNearbyMarkers([]);
   };
 
   const openSurenessModal = () => {
